@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tra cứu định mức CP QLDA & TVXD — TT 38/2026/TT-BXD</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--primary:#1a56db;--primary-light:#e8eefb;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--success:#059669;--success-bg:#ecfdf5;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh}
+.container{max-width:520px;margin:0 auto;padding:16px}
+header{text-align:center;padding:20px 0 12px}
+header h1{font-size:18px;font-weight:700;color:var(--primary)}
+header p{font-size:12px;color:var(--muted);margin-top:4px}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
+.field{margin-bottom:16px}
+.field:last-child{margin-bottom:0}
+label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px}
+select,input[type=number]{width:100%;padding:12px;font-size:15px;border:1.5px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);appearance:none;-webkit-appearance:none;outline:none;transition:border .2s}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+select:focus,input:focus{border-color:var(--primary)}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+input[type=number]{-moz-appearance:textfield}
+input::placeholder{font-style:italic;font-size:13px;color:#94a3b8}
+.result-box{background:var(--success-bg);border:1.5px solid #a7f3d0;border-radius:var(--radius);padding:20px;margin-bottom:16px;display:none}
+.result-box.show{display:block}
+.result-row{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0}
+.result-row+.result-row{border-top:1px dashed #d1fae5}
+.result-label{font-size:13px;color:var(--muted)}
+.result-value{font-size:20px;font-weight:700;color:var(--success)}
+.result-value.small{font-size:15px}
+.result-note{font-size:11px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid #d1fae5}
+.result-final{border-top:2px solid #059669;margin-top:4px;padding-top:12px}
+.final-value{color:#dc2626 !important;font-size:22px !important;font-weight:800 !important}
+.hidden{display:none}
+footer{text-align:center;padding:12px 0 24px;font-size:11px;color:var(--muted)}
+footer a{color:var(--primary);text-decoration:none}
+.info-tag{display:inline-block;font-size:11px;background:var(--primary-light);color:var(--primary);padding:2px 8px;border-radius:4px;margin-top:4px}
+.coeff-section{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;margin-bottom:16px;display:none}
+.coeff-section.show{display:block}
+.coeff-title{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:10px}
+.coeff-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;font-size:13px;color:var(--text)}
+.coeff-item input[type=checkbox]{margin-top:2px;width:16px;height:16px;accent-color:var(--primary)}
+.coeff-item.disabled{opacity:0.35;pointer-events:none}
+.coeff-item.disabled label{text-decoration:line-through}
+.coeff-item label{cursor:pointer;line-height:1.4}
+.coeff-k{font-weight:600;color:var(--primary);margin-left:4px}
+.coeff-result{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);font-size:13px;color:var(--muted)}
+.coeff-result strong{color:var(--text)}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>Tra cứu ĐM chi phí QLDA & TVXD</h1>
+<p>Phụ lục VIII - Thông tư 38/2026/TT-BXD</p>
+</header>
+
+<div class="card">
+  <div class="field">
+    <label>1. Chọn loại chi phí</label>
+    <select id="selTable" onchange="onTableChange()">
+      <option value="">— Chọn bảng —</option>
+      <optgroup label="Chi phí quản lý dự án">
+        <option value="1.1">Bảng 1.1 - CP quản lý dự án</option>
+      </optgroup>
+      <optgroup label="Chi phí lập báo cáo">
+        <option value="2.1">Bảng 2.1 - Lập BC đề xuất chủ trương ĐT</option>
+        <option value="2.2">Bảng 2.2 - Lập BC nghiên cứu tiền khả thi</option>
+        <option value="2.3">Bảng 2.3 - Lập BC nghiên cứu khả thi</option>
+        <option value="2.4">Bảng 2.4 - Lập BCKTKT (TMĐT không quá 40 tỷ)</option>
+        <option value="2.5">Bảng 2.5 - Lập BCKTKT dự án sửa chữa bảo trì nhóm C</option>
+        <option value="2.6">Bảng 2.6 - Lập BCKTKT nạo vét luồng hàng hải, đường thủy</option>
+      </optgroup>
+      <optgroup label="Chi phí thiết kế — Dân dụng">
+        <option value="2.7">Bảng 2.7 - TKKT CT dân dụng có yêu cầu TKKT và TK BVTC</option>
+        <option value="2.8">Bảng 2.8 - TK BVTC CT dân dụng không yêu cầu TKKT</option>
+        <option value="DD1">Bảng DD1 - Phụ thu thiết bị dân dụng (TB ≥ 50% XD+TB)</option>
+      </optgroup>
+      <optgroup label="Chi phí thiết kế — Công nghiệp">
+        <option value="2.9">Bảng 2.9 - TKKT CT công nghiệp có yêu cầu TKKT và TK BVTC</option>
+        <option value="2.10">Bảng 2.10 - TK BVTC CT công nghiệp không yêu cầu TKKT</option>
+        <option value="CN1">Bảng CN1 - Cáp ngầm (theo cấp điện áp)</option>
+        <option value="CN2">Bảng CN2 - Phụ thu TB công nghiệp</option>
+      </optgroup>
+      <optgroup label="Chi phí thiết kế — Giao thông">
+        <option value="2.11">Bảng 2.11 - TKKT CT giao thông có yêu cầu TKKT và TK BVTC ⭐</option>
+        <option value="2.12">Bảng 2.12 - TK BVTC CT giao thông không yêu cầu TKKT ⭐</option>
+      </optgroup>
+      <optgroup label="Chi phí thiết kế — Nông nghiệp & MT">
+        <option value="2.13">Bảng 2.13 - TKKT CT nông nghiệp & MT có yêu cầu TKKT và TK BVTC</option>
+        <option value="2.14">Bảng 2.14 - TK BVTC CT nông nghiệp & MT không yêu cầu TKKT</option>
+        <option value="TL1">Bảng TL1 - TK thiết bị cơ khí thủy lợi</option>
+      </optgroup>
+      <optgroup label="Chi phí thiết kế — Hạ tầng kỹ thuật">
+        <option value="2.15">Bảng 2.15 - TKKT CT HTKT có yêu cầu TKKT và TK BVTC ⭐</option>
+        <option value="2.16">Bảng 2.16 - TK BVTC CT HTKT không yêu cầu TKKT ⭐</option>
+        <option value="HTKT1">Bảng HTKT1 - Thông tin - Truyền thông (truyền dẫn)</option>
+        <option value="HTKT2">Bảng HTKT2 - Máy thông tin</option>
+      </optgroup>
+      <optgroup label="Chi phí thẩm tra">
+        <option value="2.17">Bảng 2.17 - Thẩm tra BC NC tiền khả thi</option>
+        <option value="2.18">Bảng 2.18 - Thẩm tra BC NC khả thi</option>
+        <option value="2.19">Bảng 2.19 - Thẩm tra thiết kế XD</option>
+        <option value="2.20">Bảng 2.20 - Thẩm tra dự toán XD</option>
+      </optgroup>
+      <optgroup label="Chi phí đấu thầu">
+        <option value="2.21">Bảng 2.21 - Lập HSMT, đánh giá HSDT tư vấn</option>
+        <option value="2.22">Bảng 2.22 - Lập HSMT, đánh giá HSDT thi công XD</option>
+        <option value="2.23">Bảng 2.23 - Lập HSMT, đánh giá HSDT mua sắm VT, TB</option>
+      </optgroup>
+      <optgroup label="Chi phí giám sát">
+        <option value="2.24">Bảng 2.24 - Giám sát thi công XD</option>
+        <option value="2.25">Bảng 2.25 - Giám sát lắp đặt thiết bị</option>
+        <option value="2.26">Bảng 2.26 - Giám sát công tác khảo sát XD</option>
+      </optgroup>
+    </select>
+  </div>
+
+  <div class="field hidden" id="step2">
+    <label id="step2Label">2. Chọn loại / cấp công trình</label>
+    <select id="selSub" onchange="onSubChange()">
+      <option value="">— Chọn —</option>
+    </select>
+  </div>
+
+  <div class="field hidden" id="step3">
+    <label id="step3Label">3. Nhập Cxd+tb</label>
+    <div style="margin-top:4px;margin-bottom:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      <select id="selUnit" onchange="calculate()" style="width:auto;padding:6px 28px 6px 10px;font-size:13px">
+        <option value="ty">tỷ đồng</option>
+        <option value="trieu">triệu đồng</option>
+        <option value="dong">đồng</option>
+      </select>
+      <select id="selInputType" onchange="onInputTypeChange()" style="width:auto;padding:6px 28px 6px 10px;font-size:13px">
+        <option value="pre">Chưa có thuế GTGT</option>
+        <option value="post">Đã có thuế GTGT</option>
+      </select>
+      <select id="selInputVAT" onchange="calculate()" style="width:auto;padding:6px 28px 6px 10px;font-size:13px;display:none">
+        <option value="10">thuế suất 10%</option>
+        <option value="8">thuế suất 8%</option>
+      </select>
+    </div>
+    <input type="number" id="inputCost" placeholder="Nhập giá trị..." min="0" step="any" oninput="this.style.fontStyle='normal';calculate()">
+  </div>
+</div>
+
+<div class="coeff-section" id="coeffSection">
+  <div class="coeff-title">Hệ số điều chỉnh (chọn nếu áp dụng)</div>
+
+  <div id="coeffList"></div>
+  <div class="coeff-result" id="coeffResult"></div>
+</div>
+
+<div class="result-box" id="resultBox">
+  <div class="result-row hidden" id="rowConvert">
+    <span class="result-label" id="lblConvert">Cxd+tb chưa thuế GTGT</span>
+    <span class="result-value small" id="resConvert">—</span>
+  </div>
+  <div class="result-row">
+    <span class="result-label">Định mức (nội suy)</span>
+    <span class="result-value" id="resRate">—</span>
+  </div>
+  <div class="result-row">
+    <span class="result-label" id="lblCostPre">Chi phí (trước thuế)</span>
+    <span class="result-value small" id="resCostPre">—</span>
+  </div>
+  <div class="result-row hidden" id="rowBVTC_placeholder"></div>
+  <div class="result-row hidden" id="rowTotalTK"></div>
+  <div class="result-row" style="padding-top:10px">
+    <span class="result-label" style="display:flex;align-items:center;gap:6px">
+      <span id="lblVATout">Thuế GTGT</span>
+      <select id="selOutVAT" onchange="calculate()" style="width:auto;padding:4px 24px 4px 8px;font-size:12px;border:1px solid var(--border);border-radius:4px">
+        <option value="10">10%</option>
+        <option value="8">8%</option>
+      </select>
+    </span>
+    <span class="result-value small" id="resVATamt">—</span>
+  </div>
+  <div class="result-row result-final">
+    <span class="result-label" id="lblCostPost">Chi phí (sau thuế)</span>
+    <span class="result-value final-value" id="resCostPost">—</span>
+  </div>
+  <div class="result-note" id="resNote"></div>
+</div>
+
+<div class="result-box" id="bvtcBox" style="display:none;border-color:#93c5fd;background:#eff6ff">
+  <div class="result-row">
+    <span class="result-label" id="lblBvtcPre">CP TK BVTC (trước thuế)</span>
+    <span class="result-value small" style="color:var(--primary)" id="resBvtcPre">—</span>
+  </div>
+  <div class="result-row" style="font-size:11px;color:var(--muted);padding:2px 0">
+    <span id="lblBvtcFormula">= 55% × CP TKKT theo B.2.11</span>
+    <span></span>
+  </div>
+  <div class="result-row" style="padding-top:8px">
+    <span class="result-label" style="display:flex;align-items:center;gap:6px">
+      <span>Thuế GTGT</span>
+      <select id="selBvtcVAT" onchange="calculate()" style="width:auto;padding:4px 24px 4px 8px;font-size:12px;border:1px solid var(--border);border-radius:4px">
+        <option value="10">10%</option>
+        <option value="8">8%</option>
+      </select>
+    </span>
+    <span class="result-value small" id="resBvtcVAT">—</span>
+  </div>
+  <div class="result-row result-final">
+    <span class="result-label" id="lblBvtcPost">CP TK BVTC (sau thuế)</span>
+    <span class="result-value final-value" id="resBvtcPost">—</span>
+  </div>
+</div>
+
+<footer>
+  Dữ liệu: Phụ lục VIII — TT 38/2026/TT-BXD<br>
+  Công thức nội suy theo Phần I mục 1 Thông tư
+</footer>
+</div>
+
+<script>
+// ===== DATA =====
+const DB = {
+"1.1":{
+  coeffs:[{id:"qlda_bien",label:"DA trên biển/đảo/biên giới/KTXH đặc biệt khó khăn (mục 1.3)",k:1.35},{id:"qlda_2tinh",label:"DA trải dài ≥ 2 tỉnh / nhiều CT riêng biệt nhiều tỉnh (mục 1.3)",k:1.1},{id:"qlda_tuqlda",label:"CĐT tự thực hiện QLDA — Điều 48 NĐ (mục 1.4)",k:0.8},{id:"qlda_tb50",label:"Ctb ≥ 50% tổng (Cxd+Ctb) trong TMĐT (mục 1.5)",k:0.8}],
+  name:"CP quản lý dự án",outputName:"Chi phí quản lý dự án",type:"loaiCT",inputLabel:"Cxd+tb",
+  thresholds:[10,20,50,100,200,500,1000,2000,5000,10000,20000,30000],
+  rows:{
+    "Dân dụng":[3.446,2.923,2.610,2.017,1.886,1.514,1.239,0.958,0.711,0.510,0.381,0.305],
+    "Công nghiệp":[3.557,3.018,2.694,2.082,1.947,1.564,1.279,1.103,0.734,0.527,0.393,0.314],
+    "Giao thông":[3.024,2.566,2.292,1.771,1.655,1.329,1.088,0.937,0.624,0.448,0.335,0.268],
+    "NN & MT":[3.263,2.769,2.473,1.910,1.786,1.434,1.174,1.012,0.674,0.484,0.361,0.289],
+    "HTKT":[2.901,2.461,2.198,1.593,1.560,1.275,1.071,0.899,0.599,0.429,0.321,0.257]
+  }
+},
+"2.1":{
+  coeffs:[{id:"c80",label:"Đơn vị trực thuộc Bộ/UBND tự lập BC (trần 80%)",k:0.8,type:"cap"}],
+  name:"Lập BC đề xuất chủ trương ĐT",outputName:"CP lập BC đề xuất chủ trương ĐT",type:"loaiCT",inputLabel:"Cxd+tb",
+  thresholds:[15,50,100,500,800,1000,1500,2300,3000,4000,4600],
+  rows:{
+    "Dân dụng":[0.301,0.169,0.108,0.045,0.041,0.039,0.036,0.032,0.029,0.024,0.021],
+    "Công nghiệp":[0.341,0.198,0.132,0.073,0.067,0.063,0.056,0.048,0.041,0.031,0.027],
+    "Giao thông":[0.165,0.100,0.071,0.028,0.026,0.025,0.023,0.021,0.019,0.017,0.015],
+    "NN & MT":[0.226,0.137,0.086,0.038,0.035,0.033,0.030,0.027,0.024,0.021,0.018],
+    "HTKT":[0.172,0.105,0.073,0.030,0.027,0.026,0.024,0.021,0.018,0.015,0.014]
+  }
+},
+"2.2":{
+  coeffs:[{id:"qtqg",label:"Dự án quan trọng quốc gia",k:1.1}],
+  name:"Lập BC NC tiền khả thi",outputName:"CP lập BC NC tiền khả thi",type:"loaiCT",inputLabel:"Cxd+tb",
+  thresholds:[15,20,50,100,200,500,1000,2000,5000,10000,20000,30000],
+  rows:{
+    "Dân dụng":[0.668,0.503,0.376,0.240,0.161,0.100,0.086,0.073,0.050,0.040,0.026,0.022],
+    "Công nghiệp":[0.757,0.612,0.441,0.294,0.206,0.163,0.141,0.110,0.074,0.057,0.034,0.027],
+    "Giao thông":[0.413,0.345,0.251,0.177,0.108,0.071,0.062,0.053,0.036,0.029,0.019,0.016],
+    "NN & MT":[0.566,0.472,0.343,0.216,0.144,0.096,0.082,0.070,0.048,0.039,0.025,0.021],
+    "HTKT":[0.431,0.360,0.262,0.183,0.112,0.074,0.065,0.055,0.038,0.030,0.020,0.017]
+  }
+},
+"2.3":{
+  coeffs:[{id:"qtqg",label:"Dự án quan trọng quốc gia",k:1.1},{id:"caitan",label:"Cải tạo, sửa chữa, mở rộng kết nối CT hiện có",k:1.15},{id:"2tinh",label:"Nhiều CT riêng biệt trên ≥ 2 tỉnh",k:1.1},{id:"tkmau",label:"Sử dụng TK mẫu / TK điển hình",k:0.8},{id:"tklap",label:"Sử dụng TK lặp lại / sử dụng lại TK",k:0.8},{id:"feed",label:"Dùng TK FEED thay TKCS (k=0,6 + bổ sung CP TK FEED)",k:0.6},{id:"tkkt_thay",label:"Dùng TKKT thay TKCS (k=0,6 + bổ sung CP TKKT)",k:0.6}],
+  name:"Lập BC NC khả thi",outputName:"CP lập BC NC khả thi",type:"loaiCT",inputLabel:"Cxd+tb",
+  thresholds:[15,20,50,100,200,500,1000,2000,5000,10000,20000,30000],
+  rows:{
+    "Dân dụng":[1.114,0.914,0.751,0.534,0.402,0.287,0.246,0.209,0.167,0.134,0.102,0.086],
+    "Công nghiệp":[1.261,1.112,0.882,0.654,0.515,0.466,0.404,0.315,0.248,0.189,0.135,0.107],
+    "Giao thông":[0.689,0.628,0.501,0.393,0.271,0.203,0.177,0.151,0.120,0.097,0.075,0.063],
+    "NN & MT":[0.943,0.858,0.685,0.480,0.361,0.273,0.234,0.201,0.161,0.129,0.100,0.084],
+    "HTKT":[0.719,0.654,0.524,0.407,0.280,0.211,0.185,0.158,0.127,0.101,0.078,0.065]
+  }
+},
+"2.4":{
+  coeffs:[{id:"caitan",label:"Cải tạo, sửa chữa, mở rộng kết nối CT hiện có",k:1.15},{id:"2tinh",label:"Nhiều CT riêng biệt trên ≥ 2 tỉnh",k:1.1},{id:"tkmau",label:"Sử dụng TK mẫu / TK điển hình",k:0.8},{id:"tklap",label:"Sử dụng TK lặp lại / sử dụng lại TK",k:0.8}],minCost:5000000,
+  name:"Lập BCKTKT (TMĐT ≤ 40 tỷ)",outputName:"CP lập BCKTKT",type:"loaiCT",inputLabel:"Cxd+tb",
+  thresholds:[1,3,7,15,20,40],
+  rows:{
+    "Dân dụng":[6.5,4.7,4.2,3.6,2.9,2.4],
+    "Công nghiệp":[6.7,4.8,4.3,3.8,3.2,2.5],
+    "Giao thông":[5.4,3.6,3.0,2.9,2.7,2.1],
+    "NN & MT":[6.2,4.4,3.9,3.6,3.1,2.4],
+    "HTKT":[5.8,4.2,3.4,3.0,2.8,2.2]
+  }
+},
+"2.5":{
+  coeffs:[{id:"caitan",label:"Cải tạo, sửa chữa, mở rộng kết nối CT hiện có",k:1.15},{id:"2tinh",label:"Nhiều CT riêng biệt trên ≥ 2 tỉnh",k:1.1},{id:"tkmau",label:"Sử dụng TK mẫu / TK điển hình",k:0.8},{id:"tklap",label:"Sử dụng TK lặp lại / sử dụng lại TK",k:0.8}],minCost:5000000,
+  name:"Lập BCKTKT (sửa chữa bảo trì nhóm C)",outputName:"CP lập BCKTKT",type:"loaiCT",inputLabel:"Cxd",
+  thresholds:[1,3,5,10,20,50,100,150,200,240],
+  rows:{
+    "Dân dụng":[5.31,3.96,3.87,3.41,2.70,1.98,1.80,1.73,1.65,1.62],
+    "Công nghiệp":[5.49,4.07,3.96,3.48,3.00,2.03,1.85,1.77,1.70,1.67],
+    "Giao thông":[4.23,2.88,2.85,2.58,2.49,1.64,1.49,1.43,1.31,1.29],
+    "NN & MT":[4.95,3.60,3.53,3.12,2.75,1.85,1.65,1.56,1.49,1.44],
+    "HTKT":[4.37,3.17,3.09,2.72,2.55,1.73,1.56,1.47,1.40,1.37]
+  }
+},
+"2.6":{
+  coeffs:[{id:"caitan",label:"Cải tạo, sửa chữa, mở rộng kết nối CT hiện có",k:1.15},{id:"2tinh",label:"Nhiều CT riêng biệt trên ≥ 2 tỉnh",k:1.1},{id:"tkmau",label:"Sử dụng TK mẫu / TK điển hình",k:0.8},{id:"tklap",label:"Sử dụng TK lặp lại / sử dụng lại TK",k:0.8}],minCost:5000000,
+  name:"Lập BCKTKT (nạo vét luồng HH, đường thủy)",outputName:"CP lập BCKTKT",type:"none",inputLabel:"Cxd",
+  thresholds:[1,3,5,10,20,50,100,150,200,240],
+  rates:[2.82,1.92,1.90,1.72,1.66,1.09,0.99,0.95,0.87,0.86],
+  fixedSub:"Giao thông"
+},
+"2.7":{
+  bvtcPct:55,
+  coeffs:[{id:"sc_kc0",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — không thay đổi KCCL (mục 3.5a)",k:1.1},{id:"sc_kc1",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — có thay đổi KCCL, không gồm móng (mục 3.5a)",k:1.2},{id:"sc_kc2",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — có thay đổi KCCL và móng (mục 3.5a)",k:1.3},{id:"mr_kn",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK mở rộng kết nối DCCN CT hiện có (mục 3.5a)",k:1.15},{id:"bien_dao",label:"CT trên biển / ngoài hải đảo / SCADA / DCS (mục 3.5b)",k:1.15},{id:"dd_qg",label:"CT quốc gia: sân VĐ, bảo tàng, thư viện, trụ sở Bộ/TW (mục 3.11b)",k:1.2},{id:"dd_nhaga",label:"Nhà ga hàng không (mục 3.13)",k:1.2}],
+  name:"TKKT dân dụng (có TKKT+BVTC)",outputName:"CP thiết kế kỹ thuật",type:"capCT",inputLabel:"Cxd",
+  thresholds:[10,20,50,100,200,500,1000,2000,5000,8000,10000],
+  rows:{
+    "Cấp ĐB":[3.22,2.81,2.36,2.15,1.96,1.65,1.36,1.16,0.89,0.68,0.61],
+    "Cấp I":[2.93,2.55,2.14,1.94,1.78,1.50,1.22,1.05,0.80,0.61,0.55],
+    "Cấp II":[2.67,2.33,1.96,1.77,1.62,1.37,1.11,0.94,0.73,0.55,0.50],
+    "Cấp III":[2.36,2.07,1.74,1.57,1.43,1.21,0.98,0.83,0.64,0.48,0.44],
+    "Cấp IV":[2.07,1.81,1.48,1.30,1.06,0.89,null,null,null,null,null]
+  }
+},
+"2.8":{
+  coeffs:[{id:"sc_kc0",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — không thay đổi KCCL (mục 3.5a)",k:1.1},{id:"sc_kc1",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — có thay đổi KCCL, không gồm móng (mục 3.5a)",k:1.2},{id:"sc_kc2",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — có thay đổi KCCL và móng (mục 3.5a)",k:1.3},{id:"mr_kn",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK mở rộng kết nối DCCN CT hiện có (mục 3.5a)",k:1.15},{id:"bien_dao",label:"CT trên biển / ngoài hải đảo / SCADA / DCS (mục 3.5b)",k:1.15},{id:"dd_qg",label:"CT quốc gia: sân VĐ, bảo tàng, thư viện, trụ sở Bộ/TW (mục 3.11b)",k:1.2},{id:"dd_nhaga",label:"Nhà ga hàng không (mục 3.13)",k:1.2}],
+  name:"BVTC dân dụng (không yêu cầu TKKT)",outputName:"CP thiết kế BVTC",type:"capCT",inputLabel:"Cxd",
+  thresholds:[10,20,50,100,200,500,1000,2000,5000,8000,10000],
+  rows:{
+    "Cấp ĐB":[4.66,4.05,3.41,3.10,2.83,2.39,1.93,1.65,1.28,0.99,0.91],
+    "Cấp I":[4.22,3.66,3.10,2.82,2.57,2.17,1.76,1.51,1.16,0.90,0.80],
+    "Cấp II":[3.85,3.33,2.80,2.54,2.34,1.98,1.61,1.36,1.06,0.82,0.72],
+    "Cấp III":[3.41,2.95,2.48,2.25,2.07,1.75,1.43,1.20,0.94,0.72,0.63],
+    "Cấp IV":[2.92,2.55,2.12,1.86,1.51,1.30,null,null,null,null,null]
+  }
+},
+"DD1":{
+  name:"Phụ thu TB dân dụng (TB ≥ 50% XD+TB)",outputName:"CP phụ thu thiết bị",type:"none",inputLabel:"Ctb",
+  thresholds:[5,15,25,50,100,200,500,1000,3000],
+  rates:[0.60,0.50,0.45,0.40,0.36,0.33,0.28,0.22,0.16],
+  fixedSub:"(không phân loại/cấp)"
+},
+"2.11":{
+  bvtcPct:55,
+  coeffs:[{id:"sc_kc0",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — không thay đổi KCCL (mục 3.5a)",k:1.1},{id:"sc_kc1",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — có thay đổi KCCL, không gồm móng (mục 3.5a)",k:1.2},{id:"sc_kc2",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — có thay đổi KCCL và móng (mục 3.5a)",k:1.3},{id:"mr_kn",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK mở rộng kết nối DCCN CT hiện có (mục 3.5a)",k:1.15},{id:"bien_dao",label:"CT trên biển / ngoài hải đảo / SCADA / DCS (mục 3.5b)",k:1.15},{capFilter:"Cấp ĐB",id:"gt_ham_db",excl:"gt_ham",label:"Hầm/bán hầm/nút giao khác mức — cấp ĐB (mục 3.13b)",k:1.3},{capFilter:"Cấp I",id:"gt_ham_1",excl:"gt_ham",label:"Hầm/bán hầm/nút giao khác mức — cấp I (mục 3.13b)",k:1.5},{capFilter:"Cấp II",id:"gt_ham_2",excl:"gt_ham",label:"Hầm/bán hầm/nút giao khác mức — cấp II (mục 3.13b)",k:1.65},{capFilter:["Cấp III","Cấp IV"],id:"gt_ham_34",excl:"gt_ham",label:"Hầm/bán hầm/nút giao khác mức — cấp III, IV (mục 3.13b)",k:1.86},{id:"gt_ds",excl:"gt_ds_grp",blocks:["sc_kc0","sc_kc1","sc_kc2","mr_kn"],label:"Cải tạo, sửa chữa đường sắt, cầu ĐS (mục 3.13b)",k:1.5},{id:"gt_ds_1ty",excl:"gt_ds_grp",blocks:["sc_kc0","sc_kc1","sc_kc2","mr_kn"],label:"Cầu ĐS / đường giao ĐS, Cxd ≤ 1 tỷ (mục 3.13b)",k:3.3},{capFilter:"Cấp ĐB",id:"gt_khubay_db",excl:"gt_kb",label:"Khu bay — cấp ĐB (mục 3.13b)",k:1.35},{capFilter:"Cấp I",id:"gt_khubay_1",excl:"gt_kb",label:"Khu bay — cấp I (mục 3.13b)",k:1.56}],
+  name:"TKKT giao thông (có TKKT+BVTC)",outputName:"CP thiết kế kỹ thuật",type:"capCT",inputLabel:"Cxd",
+  thresholds:[10,20,50,100,200,500,1000,2000,5000,8000,10000],
+  rows:{
+    "Cấp ĐB":[2.05,1.92,1.68,1.50,1.36,1.24,1.08,0.92,0.68,0.51,0.45],
+    "Cấp I":[1.44,1.39,1.13,1.05,0.95,0.81,0.68,0.58,0.44,0.34,0.28],
+    "Cấp II":[1.19,1.08,0.92,0.84,0.77,0.70,0.60,0.51,0.39,0.29,0.25],
+    "Cấp III":[1.05,0.93,0.81,0.74,0.68,0.58,0.48,0.43,0.32,0.25,0.21],
+    "Cấp IV":[0.95,0.87,0.76,0.69,0.59,0.49,0.43,null,null,null,null]
+  }
+},
+"2.12":{
+  coeffs:[{id:"sc_kc0",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — không thay đổi KCCL (mục 3.5a)",k:1.1},{id:"sc_kc1",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — có thay đổi KCCL, không gồm móng (mục 3.5a)",k:1.2},{id:"sc_kc2",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — có thay đổi KCCL và móng (mục 3.5a)",k:1.3},{id:"mr_kn",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK mở rộng kết nối DCCN CT hiện có (mục 3.5a)",k:1.15},{id:"bien_dao",label:"CT trên biển / ngoài hải đảo / SCADA / DCS (mục 3.5b)",k:1.15},{capFilter:"Cấp ĐB",id:"gt_ham_db",excl:"gt_ham",label:"Hầm/bán hầm/nút giao khác mức — cấp ĐB (mục 3.13b)",k:1.3},{capFilter:"Cấp I",id:"gt_ham_1",excl:"gt_ham",label:"Hầm/bán hầm/nút giao khác mức — cấp I (mục 3.13b)",k:1.5},{capFilter:"Cấp II",id:"gt_ham_2",excl:"gt_ham",label:"Hầm/bán hầm/nút giao khác mức — cấp II (mục 3.13b)",k:1.65},{capFilter:["Cấp III","Cấp IV"],id:"gt_ham_34",excl:"gt_ham",label:"Hầm/bán hầm/nút giao khác mức — cấp III, IV (mục 3.13b)",k:1.86},{id:"gt_ds",excl:"gt_ds_grp",blocks:["sc_kc0","sc_kc1","sc_kc2","mr_kn"],label:"Cải tạo, sửa chữa đường sắt, cầu ĐS (mục 3.13b)",k:1.5},{id:"gt_ds_1ty",excl:"gt_ds_grp",blocks:["sc_kc0","sc_kc1","sc_kc2","mr_kn"],label:"Cầu ĐS / đường giao ĐS, Cxd ≤ 1 tỷ (mục 3.13b)",k:3.3},{capFilter:"Cấp ĐB",id:"gt_khubay_db",excl:"gt_kb",label:"Khu bay — cấp ĐB (mục 3.13b)",k:1.35},{capFilter:"Cấp I",id:"gt_khubay_1",excl:"gt_kb",label:"Khu bay — cấp I (mục 3.13b)",k:1.56}],
+  name:"BVTC giao thông (không yêu cầu TKKT)",outputName:"CP thiết kế BVTC",type:"capCT",inputLabel:"Cxd",
+  thresholds:[10,20,50,100,200,500,1000,2000,5000,8000,10000],
+  rows:{
+    "Cấp ĐB":[3.01,2.76,2.36,2.15,1.95,1.78,1.52,1.32,1.02,0.75,0.66],
+    "Cấp I":[2.27,2.15,1.83,1.67,1.51,1.38,1.21,1.03,0.79,0.61,0.49],
+    "Cấp II":[1.67,1.55,1.32,1.20,1.10,1.01,0.85,0.72,0.56,0.42,0.36],
+    "Cấp III":[1.48,1.37,1.17,1.06,0.97,0.82,0.70,0.59,0.45,0.33,0.29],
+    "Cấp IV":[1.37,1.26,1.08,0.98,0.83,0.71,null,null,null,null,null]
+  }
+},
+"2.13":{
+  bvtcPct:55,
+  coeffs:[{id:"sc_kc0",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — không thay đổi KCCL (mục 3.5a)",k:1.1},{id:"sc_kc1",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — có thay đổi KCCL, không gồm móng (mục 3.5a)",k:1.2},{id:"sc_kc2",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — có thay đổi KCCL và móng (mục 3.5a)",k:1.3},{id:"mr_kn",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK mở rộng kết nối DCCN CT hiện có (mục 3.5a)",k:1.15},{id:"bien_dao",label:"CT trên biển / ngoài hải đảo / SCADA / DCS (mục 3.5b)",k:1.15},{id:"nn_ct_sc",blocks:["sc_kc0","sc_kc1","sc_kc2","mr_kn"],label:"Cải tạo, sửa chữa, mở rộng CT NN&MT (mục 3.14b)",k:1.5},{id:"nn_kenh",label:"Kênh dẫn dòng, tuyến ống dẫn dòng (mục 3.14b)",k:0.8},{id:"nn_ham",label:"Đường hầm thủy công, tuy nen, cống dẫn dòng (mục 3.14b)",k:1.1},{capFilter:"Cấp ĐB",id:"nn_dap_db",excl:"nn_dap",label:"Đập/tràn/tường chắn/kè đầu mối thủy lợi — cấp ĐB (mục 3.14b)",k:1.0},{capFilter:"Cấp I",id:"nn_dap_1",excl:"nn_dap",label:"Đập/tràn/tường chắn/kè đầu mối thủy lợi — cấp I (mục 3.14b)",k:1.1},{capFilter:"Cấp II",id:"nn_dap_2",excl:"nn_dap",label:"Đập/tràn/tường chắn/kè đầu mối thủy lợi — cấp II (mục 3.14b)",k:1.2},{capFilter:["Cấp III","Cấp IV"],id:"nn_dap_34",excl:"nn_dap",label:"Đập/tràn/tường chắn/kè đầu mối thủy lợi — cấp III, IV (mục 3.14b)",k:1.35}],
+  name:"TKKT nông nghiệp & MT (có TKKT+BVTC)",outputName:"CP thiết kế kỹ thuật",type:"capCT",inputLabel:"Cxd",
+  thresholds:[10,20,50,100,200,500,1000,2000,5000,8000,10000],
+  rows:{
+    "Cấp ĐB":[2.98,2.60,2.20,1.98,1.83,1.54,1.30,1.13,0.85,0.66,0.58],
+    "Cấp I":[2.70,2.36,1.99,1.78,1.66,1.39,1.17,1.02,0.77,0.59,0.52],
+    "Cấp II":[2.48,2.14,1.80,1.61,1.51,1.22,1.05,0.87,0.67,0.49,0.42],
+    "Cấp III":[2.20,1.90,1.60,1.43,1.24,1.06,0.90,0.77,0.59,0.43,0.37],
+    "Cấp IV":[1.74,1.52,1.27,1.12,1.01,0.80,0.64,null,null,null,null]
+  }
+},
+"2.14":{
+  coeffs:[{id:"sc_kc0",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — không thay đổi KCCL (mục 3.5a)",k:1.1},{id:"sc_kc1",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — có thay đổi KCCL, không gồm móng (mục 3.5a)",k:1.2},{id:"sc_kc2",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — có thay đổi KCCL và móng (mục 3.5a)",k:1.3},{id:"mr_kn",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK mở rộng kết nối DCCN CT hiện có (mục 3.5a)",k:1.15},{id:"bien_dao",label:"CT trên biển / ngoài hải đảo / SCADA / DCS (mục 3.5b)",k:1.15},{id:"nn_ct_sc",blocks:["sc_kc0","sc_kc1","sc_kc2","mr_kn"],label:"Cải tạo, sửa chữa, mở rộng CT NN&MT (mục 3.14b)",k:1.5},{id:"nn_kenh",label:"Kênh dẫn dòng, tuyến ống dẫn dòng (mục 3.14b)",k:0.8},{id:"nn_ham",label:"Đường hầm thủy công, tuy nen, cống dẫn dòng (mục 3.14b)",k:1.1},{capFilter:"Cấp ĐB",id:"nn_dap_db",excl:"nn_dap",label:"Đập/tràn/tường chắn/kè đầu mối thủy lợi — cấp ĐB (mục 3.14b)",k:1.0},{capFilter:"Cấp I",id:"nn_dap_1",excl:"nn_dap",label:"Đập/tràn/tường chắn/kè đầu mối thủy lợi — cấp I (mục 3.14b)",k:1.1},{capFilter:"Cấp II",id:"nn_dap_2",excl:"nn_dap",label:"Đập/tràn/tường chắn/kè đầu mối thủy lợi — cấp II (mục 3.14b)",k:1.2},{capFilter:["Cấp III","Cấp IV"],id:"nn_dap_34",excl:"nn_dap",label:"Đập/tràn/tường chắn/kè đầu mối thủy lợi — cấp III, IV (mục 3.14b)",k:1.35}],
+  name:"BVTC nông nghiệp & MT (không yêu cầu TKKT)",outputName:"CP thiết kế BVTC",type:"capCT",inputLabel:"Cxd",
+  thresholds:[10,20,50,100,200,500,1000,2000,5000,8000,10000],
+  rows:{
+    "Cấp ĐB":[4.29,3.75,3.17,2.85,2.60,2.21,1.87,1.58,1.22,0.95,0.83],
+    "Cấp I":[3.89,3.40,2.87,2.57,2.36,2.00,1.69,1.43,1.10,0.85,0.74],
+    "Cấp II":[3.53,3.11,2.62,2.34,2.15,1.73,1.48,1.25,0.96,0.69,0.58],
+    "Cấp III":[3.13,2.76,2.31,2.07,1.79,1.52,1.29,1.10,0.83,0.60,0.51],
+    "Cấp IV":[2.48,2.19,1.82,1.61,1.41,1.14,null,null,null,null,null]
+  }
+},
+"2.15":{
+  bvtcPct:55,
+  coeffs:[{id:"sc_kc0",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — không thay đổi KCCL (mục 3.5a)",k:1.1},{id:"sc_kc1",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — có thay đổi KCCL, không gồm móng (mục 3.5a)",k:1.2},{id:"sc_kc2",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — có thay đổi KCCL và móng (mục 3.5a)",k:1.3},{id:"mr_kn",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK mở rộng kết nối DCCN CT hiện có (mục 3.5a)",k:1.15},{id:"bien_dao",label:"CT trên biển / ngoài hải đảo / SCADA / DCS (mục 3.5b)",k:1.15},{capFilter:"Cấp I",id:"ht_nmn_1",excl:"ht_nmn",label:"Nhà máy nước / xử lý nước sạch / trạm bơm — cấp I (mục 3.15b)",k:1.2},{capFilter:"Cấp II",id:"ht_nmn_2",excl:"ht_nmn",label:"Nhà máy nước / xử lý nước sạch / trạm bơm — cấp II (mục 3.15b)",k:1.3},{capFilter:"Cấp III",id:"ht_nmn_3",excl:"ht_nmn",label:"Nhà máy nước / xử lý nước sạch / trạm bơm — cấp III (mục 3.15b)",k:1.44},{capFilter:"Cấp ĐB",id:"ht_xlnt_db",excl:"ht_xlnt",label:"Trạm bơm nước mưa / XLNT / bùn / CTR — cấp ĐB (mục 3.15b)",k:1.0},{capFilter:"Cấp I",id:"ht_xlnt_1",excl:"ht_xlnt",label:"Trạm bơm nước mưa / XLNT / bùn / CTR — cấp I (mục 3.15b)",k:1.15},{capFilter:"Cấp II",id:"ht_xlnt_2",excl:"ht_xlnt",label:"Trạm bơm nước mưa / XLNT / bùn / CTR — cấp II (mục 3.15b)",k:1.25},{capFilter:["Cấp III","Cấp IV"],id:"ht_xlnt_34",excl:"ht_xlnt",label:"Trạm bơm nước mưa / XLNT / bùn / CTR — cấp III, IV (mục 3.15b)",k:1.35},{id:"ht_ong",label:"Đường ống cấp nước / cống thoát nước (mục 3.15b)",k:1.2},{id:"ht_ong_song",label:"Đường ống cấp nước vượt sông — phần vượt sông (mục 3.15b)",k:1.2},{id:"ht_cot",label:"Cột / trụ / tháp thu phát sóng viễn thông (mục 3.15b)",k:1.2}],
+  name:"TKKT HTKT (có TKKT+BVTC)",outputName:"CP thiết kế kỹ thuật",type:"capCT",inputLabel:"Cxd",
+  thresholds:[10,20,50,100,200,500,1000,2000,5000,8000,10000],
+  rows:{
+    "Cấp ĐB":[2.22,1.94,1.63,1.48,1.36,1.14,0.97,0.83,0.61,0.48,0.43],
+    "Cấp I":[2.09,1.83,1.53,1.38,1.28,1.04,0.90,0.75,0.53,0.39,0.33],
+    "Cấp II":[1.86,1.62,1.36,1.22,1.13,0.91,0.78,0.66,0.47,0.34,0.29],
+    "Cấp III":[1.62,1.39,1.19,1.07,0.97,0.80,0.70,0.56,0.41,0.29,0.25],
+    "Cấp IV":[1.45,1.23,1.01,0.92,0.80,0.70,0.58,null,null,null,null]
+  }
+},
+"2.16":{
+  coeffs:[{id:"sc_kc0",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — không thay đổi KCCL (mục 3.5a)",k:1.1},{id:"sc_kc1",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — có thay đổi KCCL, không gồm móng (mục 3.5a)",k:1.2},{id:"sc_kc2",excl:"sc35",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK sửa chữa/cải tạo/nâng cấp — có thay đổi KCCL và móng (mục 3.5a)",k:1.3},{id:"mr_kn",blockedBy:["nn_ct_sc","gt_ds","gt_ds_1ty"],label:"TK mở rộng kết nối DCCN CT hiện có (mục 3.5a)",k:1.15},{id:"bien_dao",label:"CT trên biển / ngoài hải đảo / SCADA / DCS (mục 3.5b)",k:1.15},{capFilter:"Cấp I",id:"ht_nmn_1",excl:"ht_nmn",label:"Nhà máy nước / xử lý nước sạch / trạm bơm — cấp I (mục 3.15b)",k:1.2},{capFilter:"Cấp II",id:"ht_nmn_2",excl:"ht_nmn",label:"Nhà máy nước / xử lý nước sạch / trạm bơm — cấp II (mục 3.15b)",k:1.3},{capFilter:"Cấp III",id:"ht_nmn_3",excl:"ht_nmn",label:"Nhà máy nước / xử lý nước sạch / trạm bơm — cấp III (mục 3.15b)",k:1.44},{capFilter:"Cấp ĐB",id:"ht_xlnt_db",excl:"ht_xlnt",label:"Trạm bơm nước mưa / XLNT / bùn / CTR — cấp ĐB (mục 3.15b)",k:1.0},{capFilter:"Cấp I",id:"ht_xlnt_1",excl:"ht_xlnt",label:"Trạm bơm nước mưa / XLNT / bùn / CTR — cấp I (mục 3.15b)",k:1.15},{capFilter:"Cấp II",id:"ht_xlnt_2",excl:"ht_xlnt",label:"Trạm bơm nước mưa / XLNT / bùn / CTR — cấp II (mục 3.15b)",k:1.25},{capFilter:["Cấp III","Cấp IV"],id:"ht_xlnt_34",excl:"ht_xlnt",label:"Trạm bơm nước mưa / XLNT / bùn / CTR — cấp III, IV (mục 3.15b)",k:1.35},{id:"ht_ong",label:"Đường ống cấp nước / cống thoát nước (mục 3.15b)",k:1.2},{id:"ht_ong_song",label:"Đường ống cấp nước vượt sông — phần vượt sông (mục 3.15b)",k:1.2},{id:"ht_cot",label:"Cột / trụ / tháp thu phát sóng viễn thông (mục 3.15b)",k:1.2}],
+  name:"BVTC HTKT (không yêu cầu TKKT)",outputName:"CP thiết kế BVTC",type:"capCT",inputLabel:"Cxd",
+  thresholds:[10,20,50,100,200,500,1000,2000,5000,8000,10000],
+  rows:{
+    "Cấp ĐB":[3.23,2.79,2.35,2.13,1.95,1.64,1.39,1.19,0.90,0.70,0.63],
+    "Cấp I":[3.01,2.63,2.21,1.99,1.82,1.49,1.28,1.07,0.79,0.58,0.49],
+    "Cấp II":[2.68,2.33,1.97,1.77,1.58,1.32,1.14,0.92,0.70,0.51,0.43],
+    "Cấp III":[2.36,2.01,1.72,1.55,1.39,1.16,1.02,0.81,0.61,0.44,0.36],
+    "Cấp IV":[2.07,1.76,1.49,1.35,1.15,0.98,null,null,null,null,null]
+  }
+},
+"HTKT1":{
+  coeffs:[{id:"htkt1_c4",label:"Công trình cấp IV (mục 3.15b)",k:0.9},{id:"htkt1_ds",label:"Tín hiệu ĐS / TT điện lực, Cxd+tb ≤ 1 tỷ (mục 3.15b)",k:1.3}],
+  name:"Thông tin - Truyền thông (truyền dẫn)",outputName:"CP thiết kế TT-TT",type:"loaiCT_custom",inputLabel:"Cxd+tb",
+  thresholds:[5,10,15,25,50,100,200,500],
+  rows:{
+    "Cáp treo, cáp chôn trực tiếp":[1.83,1.40,1.30,1.10,0.95,0.80,0.70,0.60],
+    "Tuyến cáp chôn qua sông":[1.90,1.50,1.40,1.30,1.10,1.00,0.90,0.70],
+    "Hào kỹ thuật, cống cáp ngầm":[2.10,1.60,1.50,1.35,1.15,1.05,0.95,0.80]
+  }
+},
+"HTKT2":{
+  coeffs:[{id:"htkt1_c4",label:"Công trình cấp IV (mục 3.15b)",k:0.9},{id:"htkt1_ds",label:"Tín hiệu ĐS / TT điện lực, Cxd+tb ≤ 1 tỷ (mục 3.15b)",k:1.3}],
+  name:"Máy thông tin",outputName:"CP thiết kế máy TT",type:"loaiCT_custom",inputLabel:"Cxd+tb",
+  thresholds:[5,10,15,25,50,100,200,500],
+  rows:{
+    "Tổng đài host, vệ tinh, độc lập":[1.00,0.75,0.60,0.50,0.45,0.35,0.25,0.15],
+    "Tổng đài MSC, BSC, thuê bao, nhắn tin":[0.90,0.70,0.55,0.45,0.40,0.30,0.20,0.10],
+    "Thiết bị truyền dẫn quang":[1.35,0.80,0.60,0.50,0.40,0.30,0.20,0.10],
+    "Truyền dẫn vi ba":[1.70,1.40,1.30,0.80,0.60,0.45,0.30,0.15],
+    "Mạng viễn thông nông thôn":[2.80,1.75,1.40,0.90,0.65,0.50,0.35,0.20],
+    "Mạng Internet, VoIP, NGN":[1.00,0.75,0.60,0.50,0.40,0.30,0.20,0.10],
+    "Tiếp đất chống sét (cả TB)":[2.15,1.05,0.85,0.65,0.55,0.35,0.25,0.20],
+    "Trạm thông tin vệ tinh VSAT":[1.80,1.30,1.10,0.90,0.70,0.50,0.35,0.20],
+    "Trạm BTS, CS, ĐT thẻ":[1.25,0.70,0.50,0.35,0.30,0.25,0.20,0.10]
+  }
+},
+"2.17":{
+  coeffs:[{id:"tt_dxct",label:"Thẩm tra BC đề xuất chủ trương ĐT (mục 4.3)",k:0.4}],
+  name:"Thẩm tra BC NC tiền khả thi",outputName:"CP thẩm tra BC NCTKT",type:"loaiCT",inputLabel:"Cxd+tb",
+  thresholds:[15,20,50,100,200,500,1000,2000,5000,10000,20000,30000],
+  rows:{
+    "Dân dụng":[0.071,0.059,0.048,0.034,0.025,0.016,0.014,0.012,0.009,0.007,0.005,0.004],
+    "Công nghiệp":[0.098,0.083,0.067,0.049,0.037,0.028,0.025,0.020,0.015,0.010,0.007,0.005],
+    "Giao thông":[0.054,0.049,0.039,0.030,0.020,0.013,0.011,0.009,0.007,0.005,0.004,0.003],
+    "NN & MT":[0.064,0.058,0.047,0.033,0.024,0.015,0.013,0.011,0.009,0.006,0.005,0.004],
+    "HTKT":[0.056,0.051,0.041,0.032,0.021,0.013,0.012,0.010,0.008,0.005,0.004,0.003]
+  }
+},
+"2.18":{
+  coeffs:[{id:"tt_feed",label:"Dùng TK FEED thay TKCS (k=0,6; bổ sung CP TT TK theo B.2.19×k=0,7 và TT DT theo B.2.20×k=0,7)",k:0.6},{id:"tt_tkkt",label:"Dùng TKKT thay TKCS (k=0,6; bổ sung CP TT TK theo B.2.19 và TT DT theo B.2.20)",k:0.6},{id:"tt_cnghe",label:"Bổ sung thẩm tra TK công nghệ (+20% CP thẩm tra BCNCKT)",k:1.2}],
+  name:"Thẩm tra BC NC khả thi",outputName:"CP thẩm tra BC NCKT",type:"loaiCT",inputLabel:"Cxd+tb",
+  thresholds:[15,20,50,100,200,500,1000,2000,5000,10000,20000,30000],
+  rows:{
+    "Dân dụng":[0.204,0.168,0.138,0.097,0.070,0.046,0.041,0.034,0.026,0.019,0.015,0.012],
+    "Công nghiệp":[0.281,0.238,0.190,0.141,0.107,0.080,0.070,0.056,0.044,0.029,0.020,0.015],
+    "Giao thông":[0.153,0.139,0.112,0.087,0.058,0.036,0.032,0.026,0.020,0.014,0.010,0.009],
+    "NN & MT":[0.182,0.167,0.133,0.094,0.068,0.044,0.037,0.032,0.026,0.017,0.014,0.010],
+    "HTKT":[0.160,0.145,0.116,0.092,0.060,0.037,0.034,0.029,0.022,0.015,0.010,0.009]
+  }
+},
+"2.19":{
+  coeffs:[{id:"tt19_tkmau",label:"TK mẫu/điển hình, CT thứ 2 trở đi (mục 5)",k:0.36},{id:"tt19_sannen",label:"CT san nền (= 40% CP TT TK CT giao thông)",k:0.4}],bvtcPct:40,minCost:2000000,
+  name:"Thẩm tra thiết kế XD",outputName:"CP thẩm tra thiết kế",type:"loaiCT",inputLabel:"Cxd",
+  thresholds:[10,20,50,100,200,500,1000,2000,5000,8000,10000],
+  rows:{
+    "Dân dụng":[0.258,0.223,0.172,0.143,0.108,0.083,0.068,0.044,0.033,0.028,0.026],
+    "Công nghiệp":[0.290,0.252,0.192,0.146,0.113,0.087,0.066,0.053,0.038,0.031,0.028],
+    "Giao thông":[0.170,0.147,0.113,0.084,0.073,0.055,0.042,0.035,0.024,0.020,0.017],
+    "NN & MT":[0.189,0.163,0.125,0.093,0.073,0.056,0.043,0.035,0.026,0.022,0.019],
+    "HTKT":[0.197,0.172,0.133,0.099,0.076,0.059,0.046,0.040,0.029,0.024,0.021]
+  }
+},
+"2.20":{
+  coeffs:[{id:"tt20_tb25",label:"CP thiết bị ≥ 25% tổng (Cxd + Ctb) trong dự toán (mục 6.3)",k:1.2},{id:"tt20_tkmau",label:"TK mẫu/điển hình, CT thứ 2 trở đi (mục 6)",k:0.36},{id:"tt20_sannen",label:"CT san nền (= 40% CP TT DT CT giao thông)",k:0.4}],minCost:2000000,
+  name:"Thẩm tra dự toán XD",outputName:"CP thẩm tra dự toán",type:"loaiCT",inputLabel:"Cxd",
+  thresholds:[10,20,50,100,200,500,1000,2000,5000,8000,10000],
+  rows:{
+    "Dân dụng":[0.250,0.219,0.166,0.140,0.105,0.077,0.064,0.043,0.032,0.027,0.025],
+    "Công nghiệp":[0.282,0.244,0.185,0.141,0.108,0.083,0.062,0.050,0.034,0.030,0.027],
+    "Giao thông":[0.166,0.142,0.106,0.082,0.069,0.052,0.041,0.034,0.021,0.018,0.016],
+    "NN & MT":[0.183,0.158,0.119,0.092,0.070,0.053,0.040,0.034,0.024,0.021,0.018],
+    "HTKT":[0.191,0.166,0.128,0.095,0.072,0.056,0.044,0.037,0.026,0.022,0.020]
+  }
+},
+"2.21":{
+  name:"Lập HSMT + đánh giá HSDT tư vấn",outputName:"CP lập HSMT & đánh giá HSDT",type:"none",inputLabel:"Ctv",
+  thresholds:[1,3,5,10,20,50,100],
+  rates:[0.816,0.583,0.505,0.389,0.311,0.176,0.114],
+  fixedSub:"(không phân loại/cấp)"
+},
+"2.24":{
+  coeffs:[{id:"gs_bien",label:"CT biển/hải đảo/biên giới/KTXH khó khăn/BTS trải dài (mục 8.5)",k:1.2}],
+  name:"Giám sát thi công XD",outputName:"CP giám sát thi công",type:"loaiCT",inputLabel:"Cxd",
+  thresholds:[10,20,50,100,200,500,1000,2000,5000,8000,10000],
+  rows:{
+    "Dân dụng":[3.285,2.853,2.435,1.845,1.546,1.188,0.797,0.694,0.620,0.530,0.478],
+    "Công nghiệp":[3.508,3.137,2.559,2.074,1.604,1.301,0.823,0.716,0.640,0.550,0.493],
+    "Giao thông":[3.203,2.700,2.356,1.714,1.272,1.003,0.731,0.636,0.550,0.480,0.438],
+    "NN & MT":[2.598,2.292,2.075,1.545,1.189,0.950,0.631,0.550,0.490,0.420,0.378],
+    "HTKT":[2.566,2.256,1.984,1.461,1.142,0.912,0.584,0.509,0.452,0.390,0.350]
+  }
+},
+"2.26":{
+  name:"Giám sát công tác khảo sát XD",outputName:"CP giám sát khảo sát",type:"none",inputLabel:"Cks",
+  thresholds:[1,5,10,20,50],
+  rates:[4.072,3.541,3.079,2.707,2.381],
+  fixedSub:"(không phân loại/cấp)"
+},
+"2.9":{
+  bvtcPct:60,
+  coeffs:[{id:"sc_kc0",label:"TK sửa chữa/cải tạo/nâng cấp — không thay đổi KCCL (mục 3.5a)",k:1.1},{id:"sc_kc1",label:"TK sửa chữa/cải tạo/nâng cấp — có thay đổi KCCL, không gồm móng (mục 3.5a)",k:1.2},{id:"sc_kc2",label:"TK sửa chữa/cải tạo/nâng cấp — có thay đổi KCCL và móng (mục 3.5a)",k:1.3,excl:"sc35"},{id:"bien_dao",label:"CT trên biển / ngoài hải đảo / SCADA / DCS (mục 3.5b)",k:1.15},{id:"cn_nhietdien_db",label:"Nhiệt điện — cấp ĐB (mục 3.12b)",k:0.8,excl:"cn_sp"},{id:"cn_nhietdien_1",label:"Nhiệt điện — cấp I",k:0.95,excl:"cn_sp"},{id:"cn_nhietdien_2",label:"Nhiệt điện — cấp II",k:1.15,excl:"cn_sp"},{id:"cn_thuydien_db",label:"Thủy điện — cấp ĐB",k:1.0,excl:"cn_sp"},{id:"cn_thuydien_1",label:"Thủy điện — cấp I",k:1.2,excl:"cn_sp"},{id:"cn_thuydien_2",label:"Thủy điện — cấp II",k:1.44,excl:"cn_sp"},{id:"cn_tba_db",label:"Trạm biến áp — cấp ĐB",k:1.95,excl:"cn_sp"},{id:"cn_tba_12",label:"Trạm biến áp — cấp I, II",k:2.03,excl:"cn_sp"},{id:"cn_dd_db",label:"Đường dây trên không — cấp ĐB",k:0.64,excl:"cn_sp"},{id:"cn_dd_1",label:"Đường dây trên không — cấp I",k:0.76,excl:"cn_sp"}],
+  name:"TKKT công nghiệp (có TKKT+BVTC)",outputName:"CP TKKT",type:"capCT",inputLabel:"Cxd",
+  thresholds:[10,20,50,100,200,500,1000,2000,5000,8000,10000],
+  rows:{
+    "Cấp ĐB":[2.96,2.73,2.34,2.13,1.92,1.76,1.54,1.30,0.97,0.79,0.70],
+    "Cấp I":[2.47,2.27,1.93,1.77,1.60,1.46,1.28,1.09,0.80,0.65,0.58],
+    "Cấp II":[2.03,1.86,1.59,1.46,1.32,1.20,1.05,0.90,0.66,0.53,0.48],
+    "Cấp III":[1.78,1.65,1.40,1.27,1.17,1.06,0.93,0.79,0.58,0.47,0.42],
+    "Cấp IV":[1.59,1.47,1.24,1.14,0.98,0.83,null,null,null,null,null]
+  }
+},
+"2.10":{
+  coeffs:[{id:"sc_kc0",label:"TK sửa chữa/cải tạo/nâng cấp — không thay đổi KCCL (mục 3.5a)",k:1.1},{id:"bien_dao",label:"CT trên biển / ngoài hải đảo / SCADA / DCS (mục 3.5b)",k:1.15}],
+  name:"BVTC công nghiệp (không yêu cầu TKKT)",outputName:"CP TK BVTC",type:"capCT",inputLabel:"Cxd",
+  thresholds:[10,20,50,100,200,500,1000,2000,5000,8000,10000],
+  rows:{
+    "Cấp ĐB":[4.70,4.27,3.66,3.32,3.01,2.75,2.40,2.03,1.52,1.21,1.04],
+    "Cấp I":[3.87,3.57,3.02,2.77,2.50,2.28,2.01,1.70,1.26,1.02,0.88],
+    "Cấp II":[3.13,2.90,2.43,2.24,2.03,1.90,1.66,1.42,1.04,0.82,0.72],
+    "Cấp III":[2.78,2.57,2.16,1.99,1.79,1.68,1.47,1.25,0.91,0.72,0.64],
+    "Cấp IV":[2.46,2.25,1.89,1.72,1.47,1.22,null,null,null,null,null]
+  }
+},
+"CN1":{
+  name:"Cáp ngầm (theo cấp điện áp)",outputName:"CP TK cáp ngầm",type:"loaiCT_custom",inputLabel:"Cxd+tb",
+  thresholds:[5,15,25,50,100,200,500],
+  rows:{
+    "Cáp ngầm điện áp < 6KV":[1.70,1.40,1.30,1.20,1.10,0.95,0.85],
+    "Cáp ngầm điện áp 6÷110KV":[1.90,1.60,1.45,1.30,1.20,1.05,0.95],
+    "Cáp ngầm điện áp 220KV":[1.65,1.43,1.27,1.16,1.05,0.94,0.83]
+  }
+},
+"CN2":{
+  name:"Phụ thu TB công nghiệp (hóa chất/mỏ/xi măng/TBA)",outputName:"CP phụ thu TB CN",type:"loaiCT_custom",inputLabel:"Ctb",
+  thresholds:[5,15,25,50,100,200,500,1000,3000],
+  rows:{
+    "Hóa chất/mỏ/xi măng/clinker":[0.70,0.55,0.50,0.45,0.40,0.35,0.30,0.25,0.18],
+    "Trạm biến áp cấp ĐB÷I":[0.55,0.45,0.40,0.36,0.32,0.28,0.24,0.20,0.14],
+    "Trạm biến áp cấp II÷IV":[0.50,0.42,0.38,0.34,0.30,0.26,0.22,0.18,0.13],
+    "Nhiệt điện/thủy điện":[0.45,0.38,0.34,0.30,0.27,0.24,0.20,0.16,0.11]
+  }
+},
+"TL1":{
+  name:"TK thiết bị cơ khí thủy lợi",outputName:"CP TK TB cơ khí TL",type:"loaiCT_custom",inputLabel:"Ctb",
+  thresholds:[2,5,20,50,100,200,500],
+  rows:{
+    "Cấp ĐB và cấp I":[2.89,2.53,1.46,1.42,1.07,0.89,0.75],
+    "Cấp II, III và IV":[2.58,2.26,1.29,1.23,0.90,0.74,0.62]
+  }
+},
+"2.22":{
+  name:"Lập HSMT, đánh giá HSDT thi công XD",outputName:"CP lập HSMT & đánh giá HSDT thi công",type:"loaiCT",inputLabel:"Cxd",
+  thresholds:[10,20,50,100,200,500,1000,2000],
+  rows:{
+    "Dân dụng":[0.432,0.346,0.195,0.127,0.078,0.057,0.040,0.032],
+    "Công nghiệp":[0.549,0.379,0.211,0.144,0.096,0.067,0.052,0.041],
+    "Giao thông":[0.346,0.237,0.151,0.090,0.057,0.043,0.029,0.023],
+    "NN & MT":[0.361,0.302,0.166,0.094,0.066,0.046,0.031,0.026],
+    "HTKT":[0.388,0.325,0.172,0.106,0.069,0.052,0.038,0.028]
+  }
+},
+"2.23":{
+  name:"Lập HSMT, đánh giá HSDT mua sắm VT, TB",outputName:"CP lập HSMT & đánh giá HSDT mua sắm",type:"loaiCT",inputLabel:"Cvt,tb",
+  thresholds:[10,20,50,100,200,500,1000,2000],
+  rows:{
+    "Dân dụng":[0.367,0.346,0.181,0.113,0.102,0.081,0.055,0.043],
+    "Công nghiệp":[0.549,0.494,0.280,0.177,0.152,0.123,0.084,0.066],
+    "Giao thông":[0.261,0.230,0.131,0.084,0.074,0.056,0.040,0.032],
+    "NN & MT":[0.281,0.245,0.140,0.090,0.078,0.061,0.050,0.037],
+    "HTKT":[0.302,0.260,0.156,0.102,0.087,0.069,0.054,0.041]
+  }
+},
+"2.25":{
+  coeffs:[{id:"gs25_bien",label:"CT biển/hải đảo/biên giới/KTXH khó khăn/BTS trải dài (mục 8.5)",k:1.2}],
+  name:"Giám sát lắp đặt thiết bị",outputName:"CP giám sát lắp đặt TB",type:"loaiCT",inputLabel:"Ctb",
+  thresholds:[10,20,50,100,200,500,1000,2000,5000,8000,10000],
+  rows:{
+    "Dân dụng":[0.844,0.715,0.596,0.394,0.305,0.261,0.176,0.153,0.132,0.112,0.110],
+    "Công nghiệp":[1.147,1.005,0.958,0.811,0.490,0.422,0.356,0.309,0.270,0.230,0.210],
+    "Giao thông":[0.677,0.580,0.486,0.320,0.261,0.217,0.146,0.127,0.110,0.092,0.085],
+    "NN & MT":[0.718,0.585,0.520,0.344,0.276,0.232,0.159,0.138,0.120,0.098,0.091],
+    "HTKT":[0.803,0.690,0.575,0.383,0.300,0.261,0.173,0.150,0.126,0.105,0.095]
+  }
+}
+};
+
+// ===== INTERPOLATION ENGINE =====
+function interpolate(Gt, thresholds, rates) {
+  const n = thresholds.length;
+  if (Gt <= thresholds[0]) return rates[0];
+  if (Gt >= thresholds[n-1]) return rates[n-1];
+  for (let i = 0; i < n-1; i++) {
+    const Gb = thresholds[i], Ga = thresholds[i+1];
+    if (Gt >= Gb && Gt <= Ga) {
+      const Nb = rates[i], Na = rates[i+1];
+      return Nb - ((Nb - Na) / (Ga - Gb)) * (Gt - Gb);
+    }
+  }
+  return rates[n-1];
+}
+
+// ===== UI LOGIC =====
+function onTableChange() {
+  const id = document.getElementById('selTable').value;
+  const step2 = document.getElementById('step2');
+  const step3 = document.getElementById('step3');
+  const resultBox = document.getElementById('resultBox');
+  resultBox.classList.remove('show');
+  document.getElementById('inputCost').value = '';
+  document.getElementById('selInputType').value = 'pre';
+  document.getElementById('selInputVAT').style.display = 'none';
+  document.getElementById('selUnit').value = 'ty';
+
+  if (!id) { step2.classList.add('hidden'); step3.classList.add('hidden'); document.getElementById('coeffSection').classList.remove('show'); return; }
+
+  const tbl = DB[id];
+  const sel = document.getElementById('selSub');
+  sel.innerHTML = '<option value="">— Chọn —</option>';
+
+  if (tbl.type === 'none') {
+    step2.classList.add('hidden');
+    step3.classList.remove('hidden');
+    document.getElementById('step3Label').textContent = '2. Nhập ' + tbl.inputLabel;
+    renderCoeffs(id);
+  } else {
+    step2.classList.remove('hidden');
+    step3.classList.add('hidden');
+    if (tbl.type === 'capCT') {
+      document.getElementById('step2Label').textContent = '2. Chọn cấp công trình';
+      Object.keys(tbl.rows).forEach(k => {
+        sel.innerHTML += `<option value="${k}">${k}</option>`;
+      });
+    } else {
+      document.getElementById('step2Label').textContent = '2. Chọn loại công trình';
+      Object.keys(tbl.rows).forEach(k => {
+        sel.innerHTML += `<option value="${k}">${k}</option>`;
+      });
+    }
+  }
+}
+
+function onSubChange() {
+  const id = document.getElementById('selTable').value;
+  const sub = document.getElementById('selSub').value;
+  const step3 = document.getElementById('step3');
+  const resultBox = document.getElementById('resultBox');
+  resultBox.classList.remove('show');
+  document.getElementById('inputCost').value = '';
+
+  if (!sub) { step3.classList.add('hidden'); return; }
+
+  const tbl = DB[id];
+  step3.classList.remove('hidden');
+  document.getElementById('step3Label').textContent = '3. Nhập ' + tbl.inputLabel;
+  renderCoeffs(id);
+}
+
+function fmt(n) {
+  if (n >= 1000) return n.toLocaleString('vi-VN');
+  return String(n).replace('.', ',');
+}
+
+function fmtNum(n, decimals) {
+  // Format number Vietnamese style: comma as decimal, dot as thousands
+  var parts = n.toFixed(decimals).split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return parts.join(',');
+}
+
+function onTaxChange() {
+  const v = document.getElementById('selTax').value;
+  const stepVAT = document.getElementById('stepVAT');
+  if (v === 'post') { stepVAT.classList.remove('hidden'); } 
+  else { stepVAT.classList.add('hidden'); }
+  calculate();
+}
+
+function renderCoeffs(id) {
+  const tbl = DB[id];
+  const section = document.getElementById('coeffSection');
+  const list = document.getElementById('coeffList');
+  const result = document.getElementById('coeffResult');
+  list.innerHTML = '';
+  result.innerHTML = '';
+  if (!tbl.coeffs || tbl.coeffs.length === 0) {
+    section.classList.remove('show');
+    return;
+  }
+  section.classList.add('show');
+
+  // IDs of general 3.5 coefficients
+  var generalIds = ['sc_kc0','sc_kc1','sc_kc2','mr_kn','bien_dao'];
+  var generalCoeffs = tbl.coeffs.filter(c => generalIds.indexOf(c.id) >= 0);
+  var specificCoeffs = tbl.coeffs.filter(c => generalIds.indexOf(c.id) < 0);
+
+  // Determine specific group name based on table
+  var specName = '';
+  if (['2.7','2.8'].indexOf(id)>=0) specName = 'CT dân dụng (khoản 3.11b)';
+  else if (['2.9','2.10'].indexOf(id)>=0) specName = 'CT công nghiệp (khoản 3.12b)';
+  else if (['2.11','2.12'].indexOf(id)>=0) specName = 'CT giao thông (khoản 3.13b)';
+  else if (['2.13','2.14'].indexOf(id)>=0) specName = 'CT nông nghiệp & MT (khoản 3.14b)';
+  else if (['2.15','2.16'].indexOf(id)>=0) specName = 'CT hạ tầng kỹ thuật (khoản 3.15b)';
+
+  function addItem(c, parent) {
+    var div = document.createElement('div');
+    div.className = 'coeff-item';
+    div.id = 'row_' + c.id;
+    div.innerHTML = '<input type="checkbox" id="ck_' + c.id + '" onchange="onCoeffChange(\'' + id + '\')">' +
+      '<label for="ck_' + c.id + '">' + c.label.replace(/\s*\(mục [0-9.]+[a-z]?\)/g,'') + '<span class="coeff-k">k = ' + String(c.k).replace('.', ',') + '</span></label>';
+    parent.appendChild(div);
+  }
+
+  // Render general group
+  if (generalCoeffs.length > 0) {
+    var h1 = document.createElement('div');
+    h1.style.cssText = 'font-size:12px;font-weight:700;color:var(--primary);margin-bottom:6px;margin-top:2px';
+    h1.textContent = '▸ Hệ số chung (khoản 3.5)';
+    list.appendChild(h1);
+    generalCoeffs.forEach(c => addItem(c, list));
+  }
+
+  // Render specific group
+  if (specificCoeffs.length > 0 && specName) {
+    var h2 = document.createElement('div');
+    h2.style.cssText = 'font-size:12px;font-weight:700;color:#e65100;margin-bottom:6px;margin-top:14px;padding-top:10px;border-top:1px dashed var(--border)';
+    h2.textContent = '▸ Hệ số đặc thù — ' + specName;
+    list.appendChild(h2);
+    specificCoeffs.forEach(c => addItem(c, list));
+  } else if (specificCoeffs.length > 0) {
+    // Non-design tables (2.1-2.6, 1.1, etc.) — no section split needed
+    specificCoeffs.forEach(c => addItem(c, list));
+  }
+
+  // If no general group, just render all as flat list (for non-design tables)
+  if (generalCoeffs.length === 0 && specificCoeffs.length === 0) {
+    section.classList.remove('show');
+  }
+}
+
+function onCoeffChange(tableId) {
+  const tbl = DB[tableId];
+  if (!tbl.coeffs) return;
+  var checked = {};
+  tbl.coeffs.forEach(c => {
+    var cb = document.getElementById('ck_' + c.id);
+    if (cb) checked[c.id] = cb.checked;
+  });
+  // Find which checkbox was just clicked
+  var evtId = null;
+  tbl.coeffs.forEach(c => {
+    var cb = document.getElementById('ck_' + c.id);
+    if (cb && cb === document.activeElement) evtId = c.id;
+  });
+  // Exclusive groups: uncheck others in same group
+  if (evtId) {
+    var evtCoeff = tbl.coeffs.find(c => c.id === evtId);
+    if (evtCoeff && evtCoeff.excl && checked[evtId]) {
+      tbl.coeffs.forEach(c => {
+        if (c.excl === evtCoeff.excl && c.id !== evtId) {
+          var cb = document.getElementById('ck_' + c.id);
+          if (cb) { cb.checked = false; checked[c.id] = false; }
+        }
+      });
+    }
+  }
+  // Cross-blocking
+  var blockedIds = new Set();
+  tbl.coeffs.forEach(c => {
+    if (checked[c.id] && c.blocks) {
+      c.blocks.forEach(bid => blockedIds.add(bid));
+    }
+    if (c.blockedBy) {
+      var anyBlockerChecked = c.blockedBy.some(bid => checked[bid]);
+      if (anyBlockerChecked) blockedIds.add(c.id);
+    }
+  });
+  // Apply disabled state
+  tbl.coeffs.forEach(c => {
+    var row = document.getElementById('row_' + c.id);
+    var cb = document.getElementById('ck_' + c.id);
+    if (!row || !cb) return;
+    if (blockedIds.has(c.id)) {
+      row.classList.add('disabled');
+      cb.disabled = true;
+      cb.checked = false;
+    } else {
+      row.classList.remove('disabled');
+      cb.disabled = false;
+    }
+  });
+  calculate();
+}
+
+
+function getKTotal(id) {
+  const tbl = DB[id];
+  if (!tbl.coeffs) return 1;
+  let k = 1;
+  tbl.coeffs.forEach(c => {
+    const cb = document.getElementById('ck_' + c.id);
+    if (cb && cb.checked) k *= c.k;
+  });
+  return k;
+}
+
+function onInputTypeChange() {
+  const v = document.getElementById('selInputType').value;
+  const vatSel = document.getElementById('selInputVAT');
+  vatSel.style.display = (v === 'post') ? '' : 'none';
+  calculate();
+}
+
+function calculate() {
+  const id = document.getElementById('selTable').value;
+  const resultBox = document.getElementById('resultBox');
+  const rawInput = parseFloat(document.getElementById('inputCost').value);
+  if (!id || isNaN(rawInput) || rawInput <= 0) { resultBox.classList.remove('show'); return; }
+
+  const tbl = DB[id];
+  const isPostTax = document.getElementById('selInputType').value === 'post';
+  const inputVAT = parseFloat(document.getElementById('selInputVAT').value) || 10;
+  const outVAT = parseFloat(document.getElementById('selOutVAT').value) || 10;
+  const rowConvert = document.getElementById('rowConvert');
+  const costName = tbl.outputName;
+
+  // Unit conversion
+  const unit = document.getElementById('selUnit').value;
+  var unitLabel, unitDec, toTy;
+  if (unit === 'ty') { toTy = 1; unitLabel = 'tỷ đồng'; unitDec = 4; }
+  else if (unit === 'trieu') { toTy = 1e-3; unitLabel = 'triệu đồng'; unitDec = 2; }
+  else { toTy = 1e-9; unitLabel = 'đồng'; unitDec = 0; }
+
+  // Quy đổi input về chưa thuế (giữ nguyên đơn vị gốc)
+  let inputInUnit = rawInput;
+  if (isPostTax) {
+    inputInUnit = rawInput / (1 + inputVAT / 100);
+    rowConvert.classList.remove('hidden');
+    document.getElementById('lblConvert').textContent = tbl.inputLabel + ' chưa thuế GTGT';
+    document.getElementById('resConvert').textContent = fmtNum(inputInUnit, unitDec) + ' ' + unitLabel;
+  } else {
+    rowConvert.classList.add('hidden');
+  }
+
+  // Convert sang tỷ để tra bảng
+  var inputTy = inputInUnit * toTy;
+
+  let rates, thresholds = tbl.thresholds;
+  if (tbl.type === 'none') {
+    rates = tbl.rates;
+  } else {
+    const sub = document.getElementById('selSub').value;
+    if (!sub) { resultBox.classList.remove('show'); return; }
+    rates = tbl.rows[sub];
+    if (tbl.type === 'capCT') {
+      let validT = [], validR = [];
+      for (let i = 0; i < rates.length; i++) {
+        if (rates[i] !== null) { validT.push(thresholds[i]); validR.push(rates[i]); }
+      }
+      thresholds = validT; rates = validR;
+    }
+  }
+
+  const pct = interpolate(inputTy, thresholds, rates);
+  // Hệ số k
+  const kTotal = getKTotal(id);
+  const coeffResult = document.getElementById('coeffResult');
+  if (kTotal !== 1) {
+    // Build breakdown: k = 1,1 × 1,15 × 1,1 = 1,3915
+    var parts = [];
+    tbl.coeffs.forEach(c => {
+      var cb = document.getElementById('ck_' + c.id);
+      if (cb && cb.checked) parts.push(fmtNum(c.k, 2));
+    });
+    var breakdown = parts.join(' × ');
+    if (parts.length > 1) breakdown += ' = ' + fmtNum(kTotal, 4);
+    coeffResult.innerHTML = 'Hệ số tổng hợp: <strong>k = ' + breakdown + '</strong>' +
+      '<br><span style="font-style:italic;font-size:11px;color:#94a3b8">Theo mục 1.5 Chương II Phụ lục VIII TT 38/2026/TT-BXD: trường hợp áp dụng đồng thời các hệ số thì nhân các hệ số với nhau</span>';
+  } else {
+    coeffResult.innerHTML = '';
+  }
+
+  // Kết quả theo đơn vị gốc
+  let costPre = inputInUnit * pct / 100 * kTotal;
+
+  // Kiểm tra sàn tối thiểu (5 triệu đồng) cho bảng 2.4-2.6
+  let minNote = '';
+  if (tbl.minCost) {
+    var minInUnit = tbl.minCost; // minCost luôn tính bằng đồng
+    if (unit === 'ty') minInUnit = tbl.minCost / 1e9;
+    else if (unit === 'trieu') minInUnit = tbl.minCost / 1e6;
+    if (costPre < minInUnit) {
+      costPre = minInUnit;
+      var minFmt = (tbl.minCost >= 1e6) ? fmtNum(tbl.minCost/1e6, 0) + ' triệu' : fmtNum(tbl.minCost, 0);
+      minNote = ' | Áp dụng sàn tối thiểu ' + fmtNum(tbl.minCost, 0) + ' đồng';
+    }
+  }
+
+  document.getElementById('resRate').textContent = fmtNum(pct, 4) + ' %';
+
+  document.getElementById('lblCostPre').textContent = costName + ' (trước thuế)';
+  document.getElementById('resCostPre').textContent = fmtNum(costPre, unitDec) + ' ' + unitLabel;
+
+  // BVTC calculation for TKKT tables
+  var rowBVTC = document.getElementById('rowBVTC');
+  var rowTotalTK = document.getElementById('rowTotalTK');
+  var finalPre, finalName;
+  var bvtcBox = document.getElementById('bvtcBox');
+  if (tbl.bvtcPct) {
+    var costBVTC = costPre * tbl.bvtcPct / 100;
+    var bvtcVAT = parseFloat(document.getElementById('selBvtcVAT').value) || 10;
+    var bvtcVATamt = costBVTC * bvtcVAT / 100;
+    var bvtcPost = costBVTC + bvtcVATamt;
+    bvtcBox.style.display = 'block';
+    // Dynamic labels
+    var isThemTra = (id === '2.19');
+    var bvtcName = isThemTra ? 'CP thẩm tra TK BVTC' : 'CP TK BVTC';
+    var bvtcRef = isThemTra ? 'CP thẩm tra TKKT' : 'CP TKKT';
+    document.getElementById('lblBvtcPre').textContent = bvtcName + ' (trước thuế)';
+    document.getElementById('resBvtcPre').textContent = fmtNum(costBVTC, unitDec) + ' ' + unitLabel;
+    document.getElementById('lblBvtcFormula').textContent = '= ' + tbl.bvtcPct + '% × ' + bvtcRef + ' theo Bảng ' + id;
+    document.getElementById('resBvtcVAT').textContent = fmtNum(bvtcVATamt, unitDec) + ' ' + unitLabel;
+    document.getElementById('lblBvtcPost').textContent = bvtcName + ' (sau thuế)';
+    document.getElementById('resBvtcPost').textContent = fmtNum(bvtcPost, unitDec) + ' ' + unitLabel;
+    finalPre = costPre;
+    finalName = costName;
+  } else {
+    bvtcBox.style.display = 'none';
+    finalPre = costPre;
+    finalName = costName;
+  }
+
+  const vatAmt = finalPre * outVAT / 100;
+  const costPost = finalPre + vatAmt;
+
+  document.getElementById('resVATamt').textContent = fmtNum(vatAmt, unitDec) + ' ' + unitLabel;
+
+  document.getElementById('lblCostPost').textContent = finalName + ' (sau thuế)';
+  document.getElementById('resCostPost').textContent = fmtNum(costPost, unitDec) + ' ' + unitLabel;
+
+  let note = 'Bảng ' + id + ' - TT 38/2026/TT-BXD';
+  if (kTotal !== 1) note += ' | k = ' + fmtNum(kTotal, 4);
+  if (isPostTax) note += ' | Quy đổi từ CP có thuế (VAT ' + inputVAT + '%)';
+  if (inputTy <= thresholds[0]) {
+    note += ' | ≤ mốc thấp nhất → lấy ĐM mốc ≤' + fmt(thresholds[0]);
+  } else if (inputTy >= thresholds[thresholds.length-1]) {
+    note += ' | ≥ mốc cao nhất → lấy ĐM mốc ≥' + fmt(thresholds[thresholds.length-1]);
+  } else {
+    for (let i = 0; i < thresholds.length-1; i++) {
+      if (inputTy >= thresholds[i] && inputTy <= thresholds[i+1]) {
+        note += ' | Nội suy giữa mốc ' + fmt(thresholds[i]) + ' và ' + fmt(thresholds[i+1]);
+        break;
+      }
+    }
+  }
+  note += minNote;
+  document.getElementById('resNote').textContent = note;
+  resultBox.classList.add('show');
+}
+</script>
+</body>
+</html>
