@@ -132,7 +132,7 @@ footer a{color:var(--primary);text-decoration:none}
   <div class="field hidden" id="step3">
     <label id="step3Label">3. Nhập Cxd+tb</label>
     <div style="margin-top:4px;margin-bottom:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-      <select id="selUnit" onchange="calculate()" style="width:auto;padding:6px 28px 6px 10px;font-size:13px">
+      <select id="selUnit" onchange="showInputWords();calculate()" style="width:auto;padding:6px 28px 6px 10px;font-size:13px">
         <option value="ty">tỷ đồng</option>
         <option value="trieu">triệu đồng</option>
         <option value="dong">đồng</option>
@@ -146,7 +146,8 @@ footer a{color:var(--primary);text-decoration:none}
         <option value="8">thuế suất 8%</option>
       </select>
     </div>
-    <input type="number" id="inputCost" placeholder="Nhập giá trị..." min="0" step="any" oninput="this.style.fontStyle='normal';calculate()">
+    <input type="text" id="inputCost" inputmode="decimal" placeholder="Nhập giá trị..." oninput="onCostInput(this)" onfocus="this.style.fontStyle='normal'">
+    <div id="inputWords" style="font-size:11px;font-style:italic;color:var(--primary);margin-top:4px;display:none"></div>
   </div>
 </div>
 
@@ -186,6 +187,7 @@ footer a{color:var(--primary);text-decoration:none}
     <span class="result-label" id="lblCostPost">Chi phí (sau thuế)</span>
     <span class="result-value final-value" id="resCostPost">—</span>
   </div>
+  <div id="resultWords" style="font-size:11px;font-style:italic;color:#dc2626;text-align:right;padding:2px 0 6px"></div>
   <div class="result-note" id="resNote"></div>
 </div>
 
@@ -594,6 +596,167 @@ const DB = {
 }
 };
 
+// ===== INPUT FORMATTING & VIETNAMESE WORDS =====
+function onCostInput(el) {
+  // Get cursor position
+  var pos = el.selectionStart;
+  var oldLen = el.value.length;
+  // Strip everything except digits and comma (decimal separator)
+  var raw = el.value.replace(/[^0-9,]/g, '');
+  // Ensure only one comma
+  var parts = raw.split(',');
+  if (parts.length > 2) raw = parts[0] + ',' + parts.slice(1).join('');
+  // Format integer part with dots
+  parts = raw.split(',');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  el.value = parts.join(',');
+  // Adjust cursor
+  var newLen = el.value.length;
+  var newPos = pos + (newLen - oldLen);
+  el.setSelectionRange(newPos, newPos);
+  // Show words
+  showInputWords();
+  calculate();
+}
+
+function getInputValue() {
+  var raw = document.getElementById('inputCost').value;
+  // Remove dots (thousand sep), replace comma with period for parseFloat
+  raw = raw.replace(/\./g, '').replace(',', '.');
+  return parseFloat(raw) || 0;
+}
+
+function showInputWords() {
+  var val = getInputValue();
+  var el = document.getElementById('inputWords');
+  if (val <= 0) { el.style.display = 'none'; return; }
+  var unit = document.getElementById('selUnit').value;
+  el.style.display = 'block';
+  el.textContent = '(Bằng chữ: ' + readFinancial(val, unit) + './.)';
+}
+
+function readFinancial(val, unit) {
+  // Read financial number Vietnamese style: cascade to lower units, no "phẩy"
+  if (unit === 'dong') {
+    return numberToVietnamese(Math.round(val)) + ' đồng';
+  }
+  if (unit === 'ty') {
+    var tyInt = Math.floor(val);
+    var tyDec = val - tyInt; // phần thập phân tỷ
+    var trieuPart = Math.round(tyDec * 1000); // quy về triệu
+    var parts = [];
+    if (tyInt > 0) parts.push(numberToVietnamese(tyInt) + ' tỷ');
+    if (trieuPart > 0) parts.push(readTrieuDown(trieuPart));
+    if (parts.length === 0) return 'Không đồng';
+    return parts.join(', ') + ' đồng';
+  }
+  if (unit === 'trieu') {
+    var trInt = Math.floor(val);
+    var trDec = val - trInt;
+    var nghinPart = Math.round(trDec * 1000); // quy về nghìn
+    var parts = [];
+    if (trInt > 0) parts.push(numberToVietnamese(trInt) + ' triệu');
+    if (nghinPart > 0) parts.push(readNghinDown(nghinPart));
+    if (parts.length === 0) return 'Không đồng';
+    return parts.join(', ') + ' đồng';
+  }
+  return numberToVietnamese(Math.round(val)) + ' đồng';
+}
+
+function readTrieuDown(trieu) {
+  // trieu is integer number of triệu, may cascade to nghìn
+  var trInt = Math.floor(trieu);
+  var nghinPart = Math.round((trieu - trInt) * 1000);
+  var parts = [];
+  if (trInt > 0) parts.push(numberToVietnamese(trInt) + ' triệu');
+  if (nghinPart > 0) parts.push(readNghinDown(nghinPart));
+  return parts.join(', ');
+}
+
+function readNghinDown(nghin) {
+  var ngInt = Math.floor(nghin);
+  var dongPart = Math.round((nghin - ngInt) * 1000);
+  var parts = [];
+  if (ngInt > 0) parts.push(numberToVietnamese(ngInt) + ' nghìn');
+  if (dongPart > 0) parts.push(numberToVietnamese(dongPart));
+  return parts.join(', ');
+}
+
+function numberToVietnamese(n) {
+  if (n === 0) return 'không';
+  var intPart = Math.floor(n);
+  var decStr = '';
+  var nStr = n.toFixed(10);
+  var dotIdx = nStr.indexOf('.');
+  if (dotIdx >= 0) {
+    decStr = nStr.substring(dotIdx + 1).replace(/0+$/, '');
+  }
+  var result = intPart > 0 ? readVietnameseInt(intPart) : 'không';
+  if (decStr.length > 0) {
+    result += ' phẩy';
+    var digits = ['không','một','hai','ba','bốn','năm','sáu','bảy','tám','chín'];
+    for (var i = 0; i < decStr.length; i++) {
+      result += ' ' + digits[parseInt(decStr[i])];
+    }
+  }
+  // Capitalize first letter
+  result = result.charAt(0).toUpperCase() + result.slice(1);
+  return result;
+}
+
+function readVietnameseInt(n) {
+  if (n === 0) return 'không';
+  // Split into above-tỷ and below-tỷ
+  var tyPart = Math.floor(n / 1000000000);
+  var belowTy = n % 1000000000;
+  var result = '';
+  if (tyPart > 0) {
+    result = readBelow1000000000(tyPart) + ' tỷ';
+    if (belowTy > 0) {
+      // Check if need "không trăm" padding
+      if (belowTy < 100000000) result += ' không trăm';
+      result += ' ' + readBelow1000000000(belowTy);
+    }
+  } else {
+    result = readBelow1000000000(belowTy);
+  }
+  return result.replace(/\s+/g, ' ').trim();
+}
+
+function readBelow1000000000(n) {
+  // Read number < 1 billion using triệu, nghìn
+  var trieu = Math.floor(n / 1000000);
+  var nghin = Math.floor((n % 1000000) / 1000);
+  var donvi = n % 1000;
+  var parts = [];
+  if (trieu > 0) parts.push(readGroup(trieu, false) + ' triệu');
+  if (nghin > 0) parts.push(readGroup(nghin, trieu > 0) + ' nghìn');
+  else if (trieu > 0 && donvi > 0) parts.push('không nghìn');
+  if (donvi > 0) parts.push(readGroup(donvi, trieu > 0 || nghin > 0));
+  else if (parts.length === 0) return 'không';
+  return parts.join(' ');
+}
+
+function readGroup(n, hasHigher) {
+  var ones = ['không','một','hai','ba','bốn','năm','sáu','bảy','tám','chín'];
+  var h = Math.floor(n / 100);
+  var t = Math.floor((n % 100) / 10);
+  var u = n % 10;
+  var r = '';
+  if (h > 0) { r += ones[h] + ' trăm'; }
+  else if (hasHigher && (t > 0 || u > 0)) { r += 'không trăm'; }
+  if (t > 1) { r += ' ' + ones[t] + ' mươi'; }
+  else if (t === 1) { r += ' mười'; }
+  else if (t === 0 && (h > 0 || hasHigher) && u > 0) { r += ' lẻ'; }
+  if (u > 0) {
+    if (u === 1 && t > 1) r += ' mốt';
+    else if (u === 5 && t > 0) r += ' lăm';
+    else if (u === 4 && t > 1) r += ' tư';
+    else r += ' ' + ones[u];
+  }
+  return r.trim();
+}
+
 // ===== INTERPOLATION ENGINE =====
 function interpolate(Gt, thresholds, rates) {
   const n = thresholds.length;
@@ -823,8 +986,8 @@ function onInputTypeChange() {
 function calculate() {
   const id = document.getElementById('selTable').value;
   const resultBox = document.getElementById('resultBox');
-  const rawInput = parseFloat(document.getElementById('inputCost').value);
-  if (!id || isNaN(rawInput) || rawInput <= 0) { resultBox.classList.remove('show'); return; }
+  const rawInput = getInputValue();
+  if (!id || isNaN(rawInput) || rawInput <= 0) { resultBox.classList.remove('show'); document.getElementById('bvtcBox').style.display='none'; return; }
 
   const tbl = DB[id];
   const isPostTax = document.getElementById('selInputType').value === 'post';
@@ -965,6 +1128,10 @@ function calculate() {
   note += minNote;
   document.getElementById('resNote').textContent = note;
   resultBox.classList.add('show');
+  // Show Vietnamese words for final result - use rounded value matching display
+  var rw = document.getElementById('resultWords');
+  var displayedCost = parseFloat(costPost.toFixed(unitDec));
+  rw.textContent = '(Bằng chữ: ' + readFinancial(displayedCost, unit) + './.)';
 }
 </script>
 </body>
