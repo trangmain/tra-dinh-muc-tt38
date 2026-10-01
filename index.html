@@ -216,11 +216,17 @@ footer a{color:var(--primary);text-decoration:none}
   </div>
 </div>
 
+<div id="exportSection" style="text-align:center;margin-bottom:16px;display:none">
+  <button onclick="exportExcel()" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:14px;font-weight:600;cursor:pointer">📥 Xuất Excel</button>
+</div>
+
 <footer>
   Công thức nội suy theo Phần I mục 1 Thông tư 38/2026/TT-BXD<br>
   <span style="font-style:italic;color:#b0b8c4">(Thực hiện: trangnm | 08-2026)</span>
 </footer>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 
 <script>
 // ===== DATA =====
@@ -636,50 +642,37 @@ function showInputWords() {
 }
 
 function readFinancial(val, unit) {
-  // Read financial number Vietnamese style: cascade to lower units, no "phẩy"
   if (unit === 'dong') {
     return numberToVietnamese(Math.round(val)) + ' đồng';
   }
   if (unit === 'ty') {
     var tyInt = Math.floor(val);
-    var tyDec = val - tyInt; // phần thập phân tỷ
-    var trieuPart = Math.round(tyDec * 1000); // quy về triệu
+    var remainder = val - tyInt; // phần thập phân tỷ
+    var trieuRaw = remainder * 1000; // quy về triệu
+    var trieuInt = Math.floor(trieuRaw);
+    var nghinRaw = (trieuRaw - trieuInt) * 1000; // quy về nghìn
+    var nghinInt = Math.round(nghinRaw);
+    if (nghinInt >= 1000) { trieuInt += 1; nghinInt = 0; }
     var parts = [];
     if (tyInt > 0) parts.push(numberToVietnamese(tyInt) + ' tỷ');
-    if (trieuPart > 0) parts.push(readTrieuDown(trieuPart));
+    if (trieuInt > 0) parts.push(numberToVietnamese(trieuInt) + ' triệu');
+    if (nghinInt > 0) parts.push(numberToVietnamese(nghinInt) + ' nghìn');
     if (parts.length === 0) return 'Không đồng';
     return parts.join(', ') + ' đồng';
   }
   if (unit === 'trieu') {
     var trInt = Math.floor(val);
-    var trDec = val - trInt;
-    var nghinPart = Math.round(trDec * 1000); // quy về nghìn
+    var trRemainder = val - trInt;
+    var nghinRaw2 = trRemainder * 1000;
+    var nghinInt2 = Math.round(nghinRaw2);
+    if (nghinInt2 >= 1000) { trInt += 1; nghinInt2 = 0; }
     var parts = [];
     if (trInt > 0) parts.push(numberToVietnamese(trInt) + ' triệu');
-    if (nghinPart > 0) parts.push(readNghinDown(nghinPart));
+    if (nghinInt2 > 0) parts.push(numberToVietnamese(nghinInt2) + ' nghìn');
     if (parts.length === 0) return 'Không đồng';
     return parts.join(', ') + ' đồng';
   }
   return numberToVietnamese(Math.round(val)) + ' đồng';
-}
-
-function readTrieuDown(trieu) {
-  // trieu is integer number of triệu, may cascade to nghìn
-  var trInt = Math.floor(trieu);
-  var nghinPart = Math.round((trieu - trInt) * 1000);
-  var parts = [];
-  if (trInt > 0) parts.push(numberToVietnamese(trInt) + ' triệu');
-  if (nghinPart > 0) parts.push(readNghinDown(nghinPart));
-  return parts.join(', ');
-}
-
-function readNghinDown(nghin) {
-  var ngInt = Math.floor(nghin);
-  var dongPart = Math.round((nghin - ngInt) * 1000);
-  var parts = [];
-  if (ngInt > 0) parts.push(numberToVietnamese(ngInt) + ' nghìn');
-  if (dongPart > 0) parts.push(numberToVietnamese(dongPart));
-  return parts.join(', ');
 }
 
 function numberToVietnamese(n) {
@@ -699,8 +692,9 @@ function numberToVietnamese(n) {
       result += ' ' + digits[parseInt(decStr[i])];
     }
   }
-  // Capitalize first letter
+  // Capitalize only the very first letter, lowercase after commas
   result = result.charAt(0).toUpperCase() + result.slice(1);
+  result = result.replace(/,\s*[A-ZĐ]/g, function(m) { return m.toLowerCase(); });
   return result;
 }
 
@@ -1128,10 +1122,215 @@ function calculate() {
   note += minNote;
   document.getElementById('resNote').textContent = note;
   resultBox.classList.add('show');
+  document.getElementById('exportSection').style.display = 'block';
   // Show Vietnamese words for final result - use rounded value matching display
   var rw = document.getElementById('resultWords');
   var displayedCost = parseFloat(costPost.toFixed(unitDec));
   rw.textContent = '(Bằng chữ: ' + readFinancial(displayedCost, unit) + './.)';
+}
+
+function exportExcel() {
+  var id = document.getElementById('selTable').value;
+  if (!id) return;
+  var tbl = DB[id];
+  var rawInput = getInputValue();
+  var unit = document.getElementById('selUnit').value;
+  var unitLabel = unit === 'ty' ? 'tỷ đồng' : unit === 'trieu' ? 'triệu đồng' : 'đồng';
+  var numFmt = unit === 'ty' ? '#,##0.0000' : unit === 'trieu' ? '#,##0.00' : '#,##0';
+  var isPostTax = document.getElementById('selInputType').value === 'post';
+  var inputVAT = parseFloat(document.getElementById('selInputVAT').value) || 10;
+  var outVAT = parseFloat(document.getElementById('selOutVAT').value) || 10;
+  var toTy = unit === 'ty' ? 1 : unit === 'trieu' ? 1e-3 : 1e-9;
+
+  var sub = '';
+  var selSub = document.getElementById('selSub');
+  if (tbl.type !== 'none') sub = selSub.value;
+
+  var inputPreTax = rawInput;
+  if (isPostTax) inputPreTax = rawInput / (1 + inputVAT / 100);
+  var inputTy = inputPreTax * toTy;
+
+  var rates, thresholds = tbl.thresholds;
+  if (tbl.type === 'none') { rates = tbl.rates; }
+  else {
+    rates = tbl.rows[sub];
+    if (tbl.type === 'capCT') {
+      var vT = [], vR = [];
+      for (var i = 0; i < rates.length; i++) {
+        if (rates[i] !== null) { vT.push(thresholds[i]); vR.push(rates[i]); }
+      }
+      thresholds = vT; rates = vR;
+    }
+  }
+
+  var Gb, Ga, Nb, Na, n = thresholds.length;
+  if (inputTy <= thresholds[0]) { Gb = thresholds[0]; Ga = thresholds[0]; Nb = rates[0]; Na = rates[0]; }
+  else if (inputTy >= thresholds[n-1]) { Gb = thresholds[n-1]; Ga = thresholds[n-1]; Nb = rates[n-1]; Na = rates[n-1]; }
+  else { for (var i = 0; i < n-1; i++) { if (inputTy >= thresholds[i] && inputTy <= thresholds[i+1]) { Gb = thresholds[i]; Ga = thresholds[i+1]; Nb = rates[i]; Na = rates[i+1]; break; } } }
+
+  var kTotal = getKTotal(id);
+  var kDesc = [];
+  if (tbl.coeffs) { tbl.coeffs.forEach(function(c) { var cb = document.getElementById('ck_' + c.id); if (cb && cb.checked) kDesc.push(c.label + ' (k=' + String(c.k).replace('.', ',') + ')'); }); }
+  var kText = kDesc.length > 0 ? kDesc.join('; ') : 'Không áp dụng';
+
+  var subLabel = '';
+  if (tbl.type === 'loaiCT' || tbl.type === 'loaiCT_custom') subLabel = sub;
+  else if (tbl.type === 'capCT') subLabel = sub;
+  else subLabel = '(Không phân loại/cấp)';
+
+  // Bằng chữ
+  var unitDec = unit === 'ty' ? 4 : unit === 'trieu' ? 2 : 0;
+  var excelPost = parseFloat((inputPreTax * interpolate(inputTy, thresholds, rates) / 100 * kTotal * (1 + outVAT/100)).toFixed(unitDec));
+  var bangChu = 'Bằng chữ: ' + readFinancial(excelPost, unit) + './.';
+
+  // === BUILD EXCEL WITH EXCELJS ===
+  var wb = new ExcelJS.Workbook();
+  var ws = wb.addWorksheet('Tra cứu');
+
+  // Styles
+  var fontTitle = {name:'Times New Roman', size:13, bold:true};
+  var fontHeader = {name:'Times New Roman', size:11, bold:true, underline:true};
+  var fontNormal = {name:'Times New Roman', size:11};
+  var fontItalic = {name:'Times New Roman', size:11, italic:true};
+  var fontResult = {name:'Times New Roman', size:12, bold:true};
+  var fontChu = {name:'Times New Roman', size:11, bold:true, italic:true, color:{argb:'FFCC0000'}};
+  var borderThin = {top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
+  var alignR = {horizontal:'right', vertical:'top'};
+  var alignL = {horizontal:'left', wrapText:true, vertical:'top'};
+
+  // Remove gridlines
+  ws.views = [{showGridLines: false}];
+
+  // Column widths
+  ws.getColumn(1).width = 38;
+  ws.getColumn(2).width = 22;
+  ws.getColumn(3).width = 20;
+
+  var r = 0;
+  function addRow(vals, font, merge, border) {
+    r++;
+    var row = ws.getRow(r);
+    vals.forEach(function(v, i) {
+      var cell = row.getCell(i + 1);
+      if (v !== null && v !== undefined) {
+        if (typeof v === 'object' && v.formula) { cell.value = v; }
+        else { cell.value = v; }
+      }
+      cell.font = font || fontNormal;
+      cell.alignment = (i === 0) ? alignL : (i === 1 ? alignR : alignL);
+      if (border) cell.border = borderThin;
+    });
+    if (merge) ws.mergeCells(r, 1, r, 3);
+    return r;
+  }
+
+  function fmtCell(row, col, fmt) { ws.getRow(row).getCell(col).numFmt = fmt; }
+
+  // === HEADER ===
+  addRow(['BẢNG TÍNH ' + tbl.outputName.toUpperCase()], fontTitle, true);
+  addRow(['Căn cứ: Phụ lục VIII Thông tư 38/2026/TT-BXD ngày 26/6/2026 của Bộ Xây dựng'], fontItalic, true);
+  addRow(['Bảng ' + id + ' — ' + tbl.name], fontNormal, true);
+  addRow([null]);
+
+  // === THÔNG TIN ĐẦU VÀO ===
+  addRow(['THÔNG TIN ĐẦU VÀO'], fontHeader, true);
+  var subType = (tbl.type === 'capCT') ? 'Cấp công trình' : 'Loại công trình';
+  addRow([subType, subLabel, null], fontNormal, false, true);
+  var r_input = addRow([tbl.inputLabel + ' chưa thuế GTGT', inputPreTax, unitLabel], fontNormal, false, true);
+  fmtCell(r_input, 2, numFmt);
+  if (isPostTax) {
+    addRow(['(Quy đổi từ ' + fmtNum(rawInput, unitDec) + ' ' + unitLabel + ' có thuế GTGT ' + inputVAT + '%)'], fontItalic, true);
+  }
+  var r_k = addRow(['Hệ số điều chỉnh (k)', kTotal, kText], fontNormal, false, true);
+  fmtCell(r_k, 2, '0.0000');
+  addRow([null]);
+
+  // === DIỄN GIẢI NỘI SUY ===
+  addRow(['DIỄN GIẢI NỘI SUY'], fontHeader, true);
+  addRow(['Công thức: Nt = Nb - (Nb - Na) / (Ga - Gb) × (Gt - Gb)'], fontItalic, true);
+  addRow([null]);
+  var r_Gb = addRow(['Mốc dưới (Gb)', Gb, 'tỷ đồng'], fontNormal, false, true);
+  var r_Ga = addRow(['Mốc trên (Ga)', Ga, 'tỷ đồng'], fontNormal, false, true);
+  var r_Nb = addRow(['Định mức mốc dưới (Nb)', Nb / 100, null], fontNormal, false, true);
+  var r_Na = addRow(['Định mức mốc trên (Na)', Na / 100, null], fontNormal, false, true);
+  var r_Gt = addRow(['Giá trị tra cứu (Gt)', inputTy, 'tỷ đồng'], fontNormal, false, true);
+  fmtCell(r_Gb, 2, '#,##0');
+  fmtCell(r_Ga, 2, '#,##0');
+  fmtCell(r_Nb, 2, '0.00%');
+  fmtCell(r_Na, 2, '0.00%');
+  fmtCell(r_Gt, 2, '#,##0.0000');
+  addRow([null]);
+
+  // Pre-calculate for formula result caching
+  var pctNt = interpolate(inputTy, thresholds, rates) / 100;
+  var cpPreVal = inputPreTax * pctNt * kTotal;
+  var vatVal = cpPreVal * outVAT / 100;
+  var cpPostVal = cpPreVal + vatVal;
+
+  // Nt formula
+  var r_Nt;
+  if (Gb === Ga) {
+    r_Nt = addRow(['Định mức nội suy (Nt)', {formula: 'B' + r_Nb, result: pctNt}, null], fontResult, false, true);
+  } else {
+    r_Nt = addRow(['Định mức nội suy (Nt)', {formula: 'B' + r_Nb + '-(B' + r_Nb + '-B' + r_Na + ')/(B' + r_Ga + '-B' + r_Gb + ')*(B' + r_Gt + '-B' + r_Gb + ')', result: pctNt}, null], fontResult, false, true);
+  }
+  fmtCell(r_Nt, 2, '0.0000%');
+  addRow([null]);
+
+  // === KẾT QUẢ ===
+  addRow(['KẾT QUẢ'], fontHeader, true);
+  var r_cpPre = addRow([tbl.outputName + ' (trước thuế)', {formula: 'B' + r_input + '*B' + r_Nt + '*B' + r_k, result: cpPreVal}, unitLabel], fontNormal, false, true);
+  fmtCell(r_cpPre, 2, numFmt);
+  var r_vat = addRow(['Thuế GTGT (' + outVAT + '%)', {formula: 'B' + r_cpPre + '*' + outVAT + '%', result: vatVal}, unitLabel], fontNormal, false, true);
+  fmtCell(r_vat, 2, numFmt);
+  var r_cpPost = addRow([tbl.outputName + ' (sau thuế)', {formula: 'B' + r_cpPre + '+B' + r_vat, result: cpPostVal}, unitLabel], fontResult, false, true);
+  fmtCell(r_cpPost, 2, numFmt);
+
+  // Highlight result row
+  for (var c = 1; c <= 3; c++) {
+    var cell = ws.getRow(r_cpPost).getCell(c);
+    cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFFFF2CC'}};
+  }
+
+  // Bằng chữ
+  addRow([bangChu], fontChu, true);
+
+  // === BVTC ===
+  if (tbl.bvtcPct) {
+    addRow([null]);
+    var bvtcName = (id === '2.19') ? 'CP THẨM TRA TK BVTC' : 'CP TK BVTC';
+    addRow([bvtcName], fontHeader, true);
+    addRow(['= ' + tbl.bvtcPct + '% × ' + tbl.outputName + ' theo Bảng ' + id], fontItalic, true);
+    var bvtcVAT = parseFloat(document.getElementById('selBvtcVAT').value) || 10;
+    var bvtcPreVal = cpPreVal * tbl.bvtcPct / 100;
+    var bvtcVatVal = bvtcPreVal * bvtcVAT / 100;
+    var bvtcPostVal = bvtcPreVal + bvtcVatVal;
+    var r_bPre = addRow([bvtcName + ' (trước thuế)', {formula: 'B' + r_cpPre + '*' + tbl.bvtcPct + '%', result: bvtcPreVal}, unitLabel], fontNormal, false, true);
+    fmtCell(r_bPre, 2, numFmt);
+    var r_bVat = addRow(['Thuế GTGT (' + bvtcVAT + '%)', {formula: 'B' + r_bPre + '*' + bvtcVAT + '%', result: bvtcVatVal}, unitLabel], fontNormal, false, true);
+    fmtCell(r_bVat, 2, numFmt);
+    var r_bPost = addRow([bvtcName + ' (sau thuế)', {formula: 'B' + r_bPre + '+B' + r_bVat, result: bvtcPostVal}, unitLabel], fontResult, false, true);
+    fmtCell(r_bPost, 2, numFmt);
+    for (var c = 1; c <= 3; c++) {
+      ws.getRow(r_bPost).getCell(c).fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFDCE6F1'}};
+    }
+  }
+
+  // Download with yymmdd-hhmm-cpxd filename
+  var now = new Date();
+  var yy = String(now.getFullYear()).slice(2);
+  var mm = String(now.getMonth()+1).padStart(2,'0');
+  var dd = String(now.getDate()).padStart(2,'0');
+  var hh = String(now.getHours()).padStart(2,'0');
+  var mi = String(now.getMinutes()).padStart(2,'0');
+  var fileName = yy + mm + dd + '-' + hh + mi + '-cpxd.xlsx';
+  wb.xlsx.writeBuffer().then(function(buf) {
+    var blob = new Blob([buf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = fileName; a.click();
+    URL.revokeObjectURL(url);
+  });
 }
 </script>
 </body>
